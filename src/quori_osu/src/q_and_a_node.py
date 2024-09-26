@@ -12,13 +12,8 @@ import signal
 from sensor_msgs.msg import Joy
 import tkinter as tk
 import queue
-# from std_msgs.msg import String
 from std_srvs.srv import Empty, EmptyRequest
-# from std_msgs.msg import Int32
-# from quori_osu.msg import UserKey
-from quori_osu.srv import GetQuestion, KeyID, KeyIDResponse
-# from quori_osu.srv import GetQuestion, GetQuestionResponse, KeyID, KeyIDResponse
-
+from quori_osu.srv import GetQuestion, GetQuestionRequest, KeyID, KeyIDResponse
 
 # Lists for questions and audio files
 # Pink Floyd - Dark Side of the Moon Testing
@@ -39,7 +34,6 @@ introduction_file = os.path.join(simple_audio_path, "SimpleIntro.mp3")
 id_string = "default_id"  # Default value
 key_id_string = "7"  # Default key_id value
 scale_type = "Triad"  # Default scale type
-# key_number = 7 # Default key number
 
 # Question masterlist filename (should be in the format *.json)
 masterlist_name = 'masterlist.json'
@@ -62,8 +56,7 @@ complexity_list = []
 response_list = []
 
 # Delay times in seconds
-delay_times = [1, 1.5, 2, 2.5, 3]
-
+delay_times = [0, 0.5, 1, 1.5, 2, 2.5, 3]
 # Indexes and counters
 current_text_index = 0
 current_audio_index = 0
@@ -74,6 +67,7 @@ current_complex_pub_index = 0
 next_button_count = 0
 current_delay = 0
 total_questions = 0
+rating = -1
 scale_type = "Default"
 current_process = None
 task_queue = queue.Queue()
@@ -212,7 +206,7 @@ def update_csv_file_path():
 
 def write_to_file():
     """Append the original question ID, current question, answer, delay, rating, and timestamp to a CSV file."""
-    global current_complex_writing_index, current_simple_writing_index, current_audio_index
+    global current_complex_writing_index, current_simple_writing_index, current_audio_index, rating
     rospy.loginfo("Writing data to CSV file. Current Text Index: %d vs Response List %d", current_text_index, len(response_list))
 
     log_index = len(response_list) - 1 
@@ -430,7 +424,7 @@ def play_next_audio_clip():
 
 def handle_question_request(req):
     """Handle the question request from the service. Returns the next question as long as the question list hasnt been exhausted."""
-    global current_text_index, next_button_count, current_audio_index, all_questions_exhausted, current_complex_pub_index, current_simple_pub_index, response_list, current_delay
+    global current_text_index, next_button_count, current_audio_index, all_questions_exhausted, current_complex_pub_index, current_simple_pub_index, response_list, current_delay, rating
     rospy.loginfo(
         f"Question Requested.\n Next Button Count: {next_button_count} vs Text Count: {current_text_index} vs Audio Count: {current_audio_index} vs Total Questions: {total_questions} vs Response List: {len(response_list)}")
     rospy.loginfo(f"Length of List: Simple: {len(simple_question_list)} and Complex: {len(complex_question_list)}")
@@ -442,6 +436,7 @@ def handle_question_request(req):
         return "All Out of Questions"
 
     response = req.rating
+    rating = response
 
     # If the response is not -1, it means we received a rating
     # -1 is used as a placeholder for the first question
@@ -511,9 +506,24 @@ def joy_callback(data):
         if not gui_started:
             start_gui()
             gui_started = True
-        else:
-            rospy.loginfo("Doing Nothing.")
+        # else:
+            # rospy.loginfo("Doing Nothing.")
             # task_queue.put(publish_next_question)
+        else:
+            try:
+                rospy.wait_for_service('/remote_update')  # Ensure the service is available
+                remote_update_service = rospy.ServiceProxy('/remote_update', GetQuestion)
+
+                # Create the request with the appropriate fields
+                req = GetQuestionRequest()
+                req.rating = -2  # Set the rating or any other parameters as needed
+
+                # Call the service
+                remote_update_service(req)
+                # response = remote_update_service(req)
+                # rospy.loginfo(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Service call succeeded: {response}")
+            except rospy.ServiceException as e:
+                rospy.logerr(f"!!!!!!!!!! Service call failed: {e}")
 
     # Select button for stopping audio
     elif data.buttons == (0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0):  

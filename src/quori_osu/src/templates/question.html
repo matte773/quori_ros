@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Question Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='roslib.js') }}"></script>
+    <script src="{{ url_for('static', filename='ros_communication.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Current Question</h1>
+        <p id="question_text">Waiting for question...</p>
+        
+        <form action="{{ url_for('handle_response') }}" method="POST">
+            <button type="submit" name="response" value="yes">Yes</button>
+            <button type="submit" name="response" value="no">No</button>
+        </form>
+    </div>
+
+    <script>
+        window.onload = function() {
+            subscribeToQuestion();
+        };
+    </script>
+</body>
+</html>
