@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-# from quori_osu.srv._GetQuestion import GetQuestionRequest
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
-# from std_srvs.srv import Empty, EmptyResponse, EmptyRequest
 from threading import Thread
 import tkinter as tk
-# from std_msgs.msg import String, Int32
 import subprocess
-# from quori_osu.msg import UserKey
 from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
-# from quori_osu.srv import GetQuestion, GetQuestionResponse, KeyID, KeyIDRequest, KeyIDResponse
 
 # Global variables
 lastest_question = "Waiting for message..."
@@ -27,7 +22,7 @@ class GuiApp:
         self.root.geometry("1280x720")
 
         # Set the window to fullscreen
-        self.root.attributes('-fullscreen', False)
+        self.root.attributes('-fullscreen', True)
 
         # Bind the ESC key to exit fullscreen
         self.root.bind("<Escape>", self.exit_fullscreen)
@@ -38,6 +33,10 @@ class GuiApp:
 
         # Create the ID entry screen
         self.create_id_screen()
+
+        # Create a timer that updates the GUI every second
+        # self.root.after(1000, self.update_label)
+        self.root.after(1000, self.update_label_with_latest_question)
 
 
     def create_id_screen(self):
@@ -186,20 +185,31 @@ class GuiApp:
         # Container frame for buttons and title label
         self.container_frame = tk.Frame(self.root)
         self.container_frame.pack(expand=True)  # Center the frame vertically
-
-        # Title label for interaction question
-        self.title_label = tk.Label(
-            self.container_frame,
-            text="Was that interaction too slow?",  # This label is now above the buttons
-            font=("Arial", 18),
-            fg="black",
-            pady=10
-        )
+        
+        if scale_type == "Triad":
+            # Title label for interaction question
+            self.title_label = tk.Label(
+                self.container_frame,
+                text="How would you rate the response time of Quori?",  # This label is now above the buttons
+                font=("Arial", 18),
+                fg="black",
+                pady=10
+            )
+        else:
+            # Title label for interaction question
+            self.title_label = tk.Label(
+                self.container_frame,
+                text="The response time of Quori was satisfactory",  # This label is now above the buttons
+                font=("Arial", 18),
+                fg="black",
+                pady=10
+            )
         self.title_label.pack(pady=(10, 5))  # Add some padding for spacing
 
         # Buttons frame
         self.frame = tk.Frame(self.container_frame)
         self.frame.pack(side=tk.TOP, pady=20)
+        
 
         self.buttons = []
         self.selected_button = None  # Track the selected button
@@ -355,6 +365,20 @@ class GuiApp:
         if hasattr(self, 'label'):
             self.label.config(text=text)
 
+    # def update_label(self,text):
+    #         """Update the label text every second."""
+    #         if hasattr(self, 'label'):
+    #             self.label.config(text=text)  # Update the label with the latest question
+    #         self.root.after(1000, self.update_label)  # Schedule the update to run every second
+
+    # def update_label(self, text):
+    #     """Update the displayed question in the GUI."""
+    #     self.label.config(text=text)
+
+    def update_label_with_latest_question(self):
+        """Update the label with the latest question."""
+        self.update_label(self.lastest_question)  # Use the global variable
+        self.root.after(1000, self.update_label_with_latest_question)  # Continue updating
 
     def run(self):
         """Run the Tkinter main loop."""
@@ -383,8 +407,10 @@ class GuiNode:
         self.stop_service = rospy.Service('stop_gui', Empty, self.stop_gui)
 
         # Initialize the service client for /get_question
-        rospy.wait_for_service('/get_question')
+        # rospy.wait_for_service('/get_question')
         self.get_question_service = rospy.ServiceProxy('/get_question', GetQuestion, self.request_question)
+
+        self.remote_update = rospy.Service('/remote_update', GetQuestion, self.request_question)
 
         # Initialize the service client for /key_id
         rospy.wait_for_service('/key_id')
@@ -393,16 +419,30 @@ class GuiNode:
 
     def request_question(self, req):
         """Request a question from the service."""
-        global lastest_question
+        # global lastest_question
         try:
             response = self.get_question_service(req)
-            lastest_question = response.question
-            print(f"New Question: {lastest_question}")
+            self.lastest_question = response.question
+            print(f"New Question: {self.lastest_question}")
             # Update your GUI with the received question
-            self.gui_app.update_label(lastest_question)
+            self.gui_app.update_label(self.lastest_question)
+            return response
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
 
+        
+    # def remote_request_question(self, req):
+    #         """Request a question from the service."""
+    #         global lastest_question
+    #         try:
+    #             # req.rating = -2
+    #             response = self.get_question_service(req)
+    #             lastest_question = response.question
+    #             print(f"New Question: {lastest_question}")
+    #             # Update your GUI with the received question
+    #             self.gui_app.update_label(lastest_question)
+    #         except rospy.ServiceException as e:
+    #             rospy.logerr(f"Service call failed: {e}")
 
     def start_gui(self, req):
         """Start the GUI application."""
@@ -441,6 +481,7 @@ class GuiNode:
     def run(self):
         """Run the ROS node."""
         rospy.loginfo("GUI Node is running")
+        self.launch_gui()
         rospy.spin()
 
 

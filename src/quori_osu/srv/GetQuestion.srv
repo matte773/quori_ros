@@ -1,5 +1,6 @@
 # The request is the rating the user selected for the gui
 # If -1 then its the inital question request 
+# If -2 then the wizard remotely updated the question with no user rating 
 int64 rating
 ---
 # The response is the next question in the list
