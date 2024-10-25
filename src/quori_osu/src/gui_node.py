@@ -36,7 +36,7 @@ class GuiApp:
 
         # Create a timer that updates the GUI every second
         # self.root.after(1000, self.update_label)
-        self.root.after(1000, self.update_label_with_latest_question)
+        # self.root.after(1000, self.update_label_with_latest_question)
 
 
     def create_id_screen(self):
@@ -83,81 +83,6 @@ class GuiApp:
 
         self.scale_toggle_button.pack(pady=10)
 
-    # def create_main_gui(self):
-    #     """Set up the main GUI layout after the ID and integer are entered."""
-
-    #     # Clear the ID entry frame
-    #     self.id_frame.destroy()
-
-    #     # Request the first question
-    #     response = self.question_service(-1)
-    #     lastest_question = response.question
-    #     rospy.loginfo(f"First question recived from service: {lastest_question}")
-
-    #     # Upper half text
-    #     self.label = tk.Message(self.root, text=lastest_question, font=("Arial", 24), width=600)
-    #     self.label.pack(pady=20)
-
-    #     # Container frame for buttons and title label
-    #     self.container_frame = tk.Frame(self.root)
-    #     self.container_frame.pack(expand=True)  # Center the frame vertically
-
-    #     # Title label for interaction question
-    #     self.title_label = tk.Label(
-    #         self.container_frame,
-    #         text="Was that interaction too slow?",  # Move this label above the buttons
-    #         font=("Arial", 18),
-    #         fg="black",
-    #         pady=10
-    #     )
-    #     self.title_label.pack(pady=(10, 5))  # Add some padding for spacing
-
-    #     # Buttons frame
-    #     self.frame = tk.Frame(self.container_frame)
-    #     self.frame.pack(side=tk.TOP, pady=20)
-
-    #     self.buttons = []
-    #     self.selected_button = None  # Track the selected button
-
-    #     if scale_type == "Triad":
-    #         button_config = [
-    #             ("Too Slow", "#FF9999", "#FFCCCC"),        # Soft red and lighter soft red
-    #             ("Somewhat Slow", "#FFD1A6", "#FFE5CC"),   # Soft amber and lighter soft amber
-    #             ("Not Slow", "#99FF99", "#CCFFCC"),        # Soft green and lighter soft green
-    #         ]
-
-    #         # Use the same font and size as the submit button
-    #         button_font = ("Arial", 24)
-    #         button_width = 20
-    #         button_height = 2
-    #     else:
-    #         # Add title above the buttons when using 5-point scale
-    #         button_config = [
-    #             ("Strongly Disagree", "#FF9999", "#FFCCCC"),  # Soft red and lighter soft red
-    #             ("Disagree", "#FFD1A6", "#FFE5CC"),           # Soft amber and lighter soft amber
-    #             ("Neutral", "#FFFF99", "#FFFFCC"),            # Soft yellow and lighter soft yellow
-    #             ("Agree", "#99FF99", "#CCFFCC"),              # Soft green and lighter soft green
-    #             ("Strongly Agree", "#99FFCC", "#CCFFCC"),     # Soft green and lighter soft green
-    #         ]
-
-    #         # Use the same font and size as the submit button
-    #         button_font = ("Arial", 24)
-    #         button_width = 15
-    #         button_height = 2
-
-    #     for i, (label, color, selected_color) in enumerate(button_config):
-    #         btn = tk.Button(
-    #             self.frame,
-    #             text=label,
-    #             width=button_width,
-    #             height=button_height,
-    #             bg=color,
-    #             activebackground=selected_color,  # Use the selected_color for active background
-    #             font=button_font,  # Same font as the submit button
-    #             command=lambda b=i: self.select_button(b)
-    #         )
-    #         btn.pack(side=tk.LEFT, anchor=tk.CENTER, padx=5)
-    #         self.buttons.append(btn)
 
     def create_main_gui(self):
         """Set up the main GUI layout after the ID and integer are entered."""
@@ -376,8 +301,9 @@ class GuiApp:
     #     self.label.config(text=text)
 
     def update_label_with_latest_question(self):
+        global lastest_question
         """Update the label with the latest question."""
-        self.update_label(self.lastest_question)  # Use the global variable
+        self.update_label(lastest_question)  # Use the global variable
         self.root.after(1000, self.update_label_with_latest_question)  # Continue updating
 
     def run(self):
@@ -400,7 +326,7 @@ class GuiNode:
         rospy.init_node('gui_node')
         self.gui_app = None
         self.gui_thread = None
-        self.latest_question = "Waiting for message..."
+        self.lastest_question = "Waiting for message..."
 
         # Services to start and stop GUI
         self.start_service = rospy.Service('start_gui', Empty, self.start_gui)
@@ -475,7 +401,7 @@ class GuiNode:
         self.gui_app = GuiApp(root, self.get_question_service, self.key_id_service)
         # self.gui_app = GuiApp(root, self.next_service, self.get_question_service, self.next_value_publisher, self.id_publisher, self.key_publisher, self.scale_publisher)
         # Ensure the latest question is shown on screen immediately
-        self.gui_app.update_label(self.latest_question)
+        self.gui_app.update_label(self.lastest_question)
         self.gui_app.run()
 
     def run(self):
