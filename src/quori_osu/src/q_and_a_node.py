@@ -90,12 +90,16 @@ def init():
 
 
 def init_service_clients():
-    """Initialize the service clients for starting and stopping the GUI."""
+    """Initialize the service clients for starting and stopping the GUI and switching faces."""
     rospy.wait_for_service('start_gui')
     rospy.wait_for_service('stop_gui')
     start_gui_service = rospy.ServiceProxy('start_gui', Empty)
     stop_gui_service = rospy.ServiceProxy('stop_gui', Empty)
-    return start_gui_service, stop_gui_service
+    # create dictionary of face services
+    faces = ['default_face', 'thinking_face', 'talking_face']
+    [rospy.wait_for_service(face) for face in faces]
+    face_service_dict = {face: rospy.ServiceProxy('/'+face, Empty) for face in faces}
+    return start_gui_service, stop_gui_service, face_service_dict
 
 
 def set_audio_output(sink_name):
@@ -341,10 +345,22 @@ def handle_key_service(req):
         return KeyIDResponse(success=False) 
 
 
+def swap_faces(face_service):
+    """Swap faces using the face service."""
+    try:
+        face_service(EmptyRequest())
+        rospy.loginfo(f"Face Swapped Successfully: {face_service}")
+    except rospy.ServiceException as e:
+        rospy.logerr(f"Failed to call face swap service: {e}")
+
+
 def play_audio(file_path):
     """Original audio playing function."""
     global current_process
-    current_process = subprocess.Popen(["mpg123", file_path])
+    if current_process is None or current_process.poll() is not None:
+        current_process = subprocess.Popen(["mpg123", file_path])
+        while current_process is not None and current_process.poll() is None:
+            pass
 
 
 # Blocking play_audio function, TODO implement threading
@@ -422,10 +438,14 @@ def introduction():
 def play_with_delay(file_path, delay):
     """Function to play audio after a delay using threading."""
     def delayed_play():
+        swap_faces(face_service_dict['thinking_face'])
         rospy.loginfo(f"Waiting for {delay} seconds before playing.")
         rospy.sleep(delay)  # Sleep without blocking the entire program
+
         rospy.loginfo(f"Now playing: {file_path}")
+        swap_faces(face_service_dict['talking_face'])
         play_audio(file_path)
+        swap_faces(face_service_dict['default_face'])
 
     threading.Thread(target=delayed_play).start()
 
@@ -603,7 +623,7 @@ if __name__ == '__main__':
     init()
 
     # Initialize the service clients
-    start_gui_service, stop_gui_service = init_service_clients()
+    start_gui_service, stop_gui_service, face_service_dict = init_service_clients()
 
     root = tk.Tk()
     root.withdraw()
