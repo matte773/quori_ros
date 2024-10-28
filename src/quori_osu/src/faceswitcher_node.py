@@ -22,20 +22,25 @@ class GifLabel(tk.Label):
             im = Image.open(im)
         self.loc = 0
         self.frames = []
+        self.delays = []
 
         try:
             for i in count(1):
                 self.frames.append(
                     ImageTk.PhotoImage(im.resize((width,height)))
                     )
+                try:
+                    self.delays.append(im.info['duration'])
+                except:
+                    self.delays.append(100)
                 im.seek(i)
         except EOFError:
             pass
 
-        try:
-            self.delay = im.info['duration']
-        except:
-            self.delay = 100
+        # try:
+        #     self.delay = im.info['duration']
+        # except:
+        #     self.delay = 100
 
         if len(self.frames) == 1:
             self.config(image=self.frames[0])
@@ -53,7 +58,7 @@ class GifLabel(tk.Label):
             self.loc += 1
             self.loc %= len(self.frames)
             self.config(image=self.frames[self.loc])
-            self.after_call = self.after(self.delay, self.next_frame)
+            self.after_call = self.after(self.delays[self.loc], self.next_frame)
 
 class FaceSwitcher:
     def __init__(self):
