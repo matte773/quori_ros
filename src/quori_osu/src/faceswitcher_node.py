@@ -13,20 +13,20 @@ from itertools import count
 class GifLabel(tk.Label):
     """a label that displays images, and plays them if they are gifs"""
     def load(self, im):
-
+        """Loads new GIF and then removes the past frame if any"""
         self.configure(bg="black")
         width = self.winfo_screenwidth()
-        height = self.winfo_screenheight() # can resize each frame, but costs computation time
+        height = self.winfo_screenheight()
         
         if isinstance(im, str):
             im = Image.open(im)
-        self.loc = 0
-        self.frames = []
+        next_frames = []
         self.delays = []
-
+        # try to do this before unloading current image
         try:
             for i in count(1):
-                self.frames.append(
+                # resizes each frame, but adds delay between signal and switch
+                next_frames.append(
                     ImageTk.PhotoImage(im.resize((width,height)))
                     )
                 try:
@@ -37,28 +37,25 @@ class GifLabel(tk.Label):
         except EOFError:
             pass
 
-        # try:
-        #     self.delay = im.info['duration']
-        # except:
-        #     self.delay = 100
+        #stop updating previous image
+        if hasattr(self, 'after_call'):
+            self.after_cancel(self.after_call)
+        self.frames = next_frames
+        self.loc = 0
 
         if len(self.frames) == 1:
             self.config(image=self.frames[0])
         else:
             self.next_frame()
 
-    def unload(self):
-        self.config(image="")
-        self.frames = None
-        if hasattr(self, 'after_call'):
-            self.after_cancel(self.after_call)
 
     def next_frame(self):
         if self.frames:
-            self.loc += 1
             self.loc %= len(self.frames)
             self.config(image=self.frames[self.loc])
-            self.after_call = self.after(self.delays[self.loc], self.next_frame)
+            delay = self.delays[self.loc]
+            self.loc += 1
+            self.after_call = self.after(delay, self.next_frame)
 
 class FaceSwitcher:
     def __init__(self):
@@ -73,9 +70,9 @@ class FaceSwitcher:
         self.root = tk.Tk()
         self.root.configure(bg="black")
         self.root.attributes('-fullscreen', True)  # Fullscreen mode
-        self.root.bind("<Escape>", self.exit_fullscreen)
-        # self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
-        self.root.attributes('-topmost', True)
+        self.root.bind("f", self.toggle_fullscreen)
+        self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
+        self.root.attributes('-topmost', True) # keeps it on top permanently
 
 
         # Create a label to display the images
@@ -91,9 +88,9 @@ class FaceSwitcher:
         rospy.Service('/thinking_face', Empty, self.show_thinking_face)
         rospy.Service('/talking_face', Empty, self.show_talking_face)
 
-    def exit_fullscreen(self, event=None):
+    def toggle_fullscreen(self, event=None):
         """Exit fullscreen mode."""
-        self.root.attributes('-fullscreen', False)
+        self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
 
     def show_default_face(self, req):
         if self.current_image_path == self.default_face_path:
@@ -104,23 +101,20 @@ class FaceSwitcher:
         return []
 
     def show_thinking_face(self, req):
-        if self.current_image_path == self.thinking_face_path:
-            return []
-        rospy.loginfo("Switching to thinking face")
-        self.current_image_path = self.thinking_face_path
-        self.update_display()
+        if self.current_image_path == self.default_face_path:
+            rospy.loginfo("Switching to thinking face")
+            self.current_image_path = self.thinking_face_path
+            self.update_display()
         return []
     
     def show_talking_face(self, req):
-        if self.current_image_path == self.talking_face_path:
-            return []
-        rospy.loginfo("Switching to talking face")
-        self.current_image_path = self.talking_face_path
-        self.update_display()
+        if self.current_image_path in [self.default_face_path, self.thinking_face_path]:
+            rospy.loginfo("Switching to talking face")
+            self.current_image_path = self.talking_face_path
+            self.update_display()
         return []
 
     def update_display(self):
-        self.label.unload()
         self.label.load(self.current_image_path)
 
     def run(self):

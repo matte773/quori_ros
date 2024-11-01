@@ -85,7 +85,7 @@ def init():
     set_audio_output('alsa_output.pci-0000_00_1f.3.analog-stereo')
 
     # Set the delay for the first question
-    current_delay = delay_times[random.randint(0, len(delay_times) - 1)]
+    current_delay = random.choice(delay_times)
 
 
 def init_service_clients():
@@ -437,7 +437,8 @@ def introduction():
 def play_with_delay(file_path, delay):
     """Function to play audio after a delay using threading."""
     def delayed_play():
-        swap_faces(face_service_dict['thinking_face'])
+        if delay > 0:
+            swap_faces(face_service_dict['thinking_face'])
         rospy.loginfo(f"Waiting for {delay} seconds before playing.")
         rospy.sleep(delay)  # Sleep without blocking the entire program
 
