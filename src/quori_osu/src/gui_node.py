@@ -11,9 +11,10 @@ from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 # Global variables
 lastest_question = "Waiting for message..."
 scale_type = "Likert"
-DARK_BLUE = '#78a2ff'
-BLUE = '#9ac7ff'
 LIGHT_BLUE = "#d4e1ff"
+
+GREEN = "#8CD47E"
+LIGHT_GREEN = "#C4E6C1"
 
 class GuiApp:
     """Main GUI application class."""
@@ -82,8 +83,8 @@ class GuiApp:
             text="Submit",
             font=("Arial", 24), 
             command=self.send_key_id,
-            bg=DARK_BLUE,
-            activebackground = BLUE,
+            bg=GREEN,
+            activebackground = LIGHT_GREEN,
             )
         self.id_button.pack(pady=10)
 
@@ -175,7 +176,7 @@ class GuiApp:
                 ("Strongly Disagree", "#FF8981", "#FFCCC7"),  # Softer red and lighter soft red
                 ("Disagree", "#FFB54C", "#FFD6A1"),           # Same orange and lighter orange
                 ("Neutral", "#F8D66D", "#FAE6A8"),            # Same yellow and lighter yellow
-                ("Agree", "#8CD47E", "#C4E6C1"),              # Same green and lighter green
+                ("Agree", GREEN, LIGHT_GREEN),              # Same green and lighter green
                 ("Strongly Agree", "#6FAF72", "#AFCFB2"),     # Darker green and lighter green
             ]
 
