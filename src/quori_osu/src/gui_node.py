@@ -2,6 +2,7 @@
 
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
+import sys
 from threading import Thread
 import tkinter as tk
 import subprocess
@@ -9,17 +10,23 @@ from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 
 # Global variables
 lastest_question = "Waiting for message..."
-scale_type = "Triad"
+scale_type = "Likert"
+DARK_BLUE = '#78a2ff'
+BLUE = '#9ac7ff'
+LIGHT_BLUE = "#d4e1ff"
 
 class GuiApp:
     """Main GUI application class."""
 
-    def __init__(self, root, question_service, key_id_service):
+    def __init__(self, root, question_service, key_id_service, question_label):
         """Initialize the GUI application."""
         self.root = root
+        self.question_label = question_label
 
         self.root.title("ROS Noetic GUI")
         self.root.geometry("1280x720")
+
+        self.root.configure(bg=LIGHT_BLUE)
 
         # Set the window to fullscreen
         self.root.attributes('-fullscreen', True)
@@ -34,6 +41,7 @@ class GuiApp:
         # Create the ID entry screen
         self.create_id_screen()
 
+
         # Create a timer that updates the GUI every second
         # self.root.after(1000, self.update_label)
         # self.root.after(1000, self.update_label_with_latest_question)
@@ -41,32 +49,42 @@ class GuiApp:
 
     def create_id_screen(self):
         """Set up the screen to enter the ID and integer value."""
-        self.id_frame = tk.Frame(self.root)
+        self.id_frame = tk.Frame(self.root, bg=LIGHT_BLUE)
         self.id_frame.pack(expand=True)
 
-        # ID Entry
-        self.id_label = tk.Label(self.id_frame, text="Enter ID:", font=("Arial", 24))
+        # Name Entry
+        self.id_label = tk.Label(self.id_frame, text="Enter Name:", font=("Arial", 24), bg=LIGHT_BLUE)
         self.id_label.pack(pady=10)
         self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
         self.id_entry.pack(pady=10)
 
-        # Integer Entry
-        self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24))
-        self.int_label.pack(pady=10)
-        self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
-        self.int_entry.pack(pady=10)
+        if self.question_label is None:
+            # Integer Entry
+            self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
+            self.int_label.pack(pady=10)
+            self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
+            self.int_entry.pack(pady=10)
 
         # Toggle Button for Scale Type
         self.scale_toggle_button = tk.Button(
             self.id_frame,
-            text="Scale: Triad",
+            text=f"Scale: {scale_type}",
             font=("Arial", 24),
-            command=self.toggle_scale
+            command=self.toggle_scale,
+            bg = LIGHT_BLUE,
+            activebackground = LIGHT_BLUE
         )
         self.scale_toggle_button.pack(pady=10)
 
         # Submit Button
-        self.id_button = tk.Button(self.id_frame, text="Submit", font=("Arial", 24), command=self.send_key_id)
+        self.id_button = tk.Button(
+            self.id_frame,
+            text="Submit",
+            font=("Arial", 24), 
+            command=self.send_key_id,
+            bg=DARK_BLUE,
+            activebackground = BLUE,
+            )
         self.id_button.pack(pady=10)
 
 
@@ -96,19 +114,19 @@ class GuiApp:
         rospy.loginfo(f"First question received from service: {lastest_question}")
 
         # Container frame for the question label and the question itself
-        self.question_frame = tk.Frame(self.root)
+        self.question_frame = tk.Frame(self.root, bg=LIGHT_BLUE)
         self.question_frame.pack(pady=20)
 
         # Add a label that says "Question:" above the actual question
-        self.question_label = tk.Label(self.question_frame, text="Question:", font=("Arial", 24), fg="black")
+        self.question_label = tk.Label(self.question_frame, text="Question:", font=("Arial", 24), fg="black", bg=LIGHT_BLUE)
         self.question_label.pack()
 
         # Display the actual question
-        self.label = tk.Message(self.question_frame, text=lastest_question, font=("Arial", 24), width=600)
+        self.label = tk.Message(self.question_frame, text=lastest_question, font=("Arial", 24), width=600, bg=LIGHT_BLUE)
         self.label.pack(pady=10)
 
         # Container frame for buttons and title label
-        self.container_frame = tk.Frame(self.root)
+        self.container_frame = tk.Frame(self.root, bg=LIGHT_BLUE)
         self.container_frame.pack(expand=True)  # Center the frame vertically
         
         if scale_type == "Triad":
@@ -118,7 +136,8 @@ class GuiApp:
                 text="How would you rate the response time of Quori?",  # This label is now above the buttons
                 font=("Arial", 18),
                 fg="black",
-                pady=10
+                pady=10,
+                bg=LIGHT_BLUE,
             )
         else:
             # Title label for interaction question
@@ -127,12 +146,13 @@ class GuiApp:
                 text="The response time of Quori was satisfactory",  # This label is now above the buttons
                 font=("Arial", 18),
                 fg="black",
-                pady=10
+                pady=10,
+                bg=LIGHT_BLUE,
             )
         self.title_label.pack(pady=(10, 5))  # Add some padding for spacing
 
         # Buttons frame
-        self.frame = tk.Frame(self.container_frame)
+        self.frame = tk.Frame(self.container_frame, bg=LIGHT_BLUE)
         self.frame.pack(side=tk.TOP, pady=20)
         
 
@@ -212,7 +232,8 @@ class GuiApp:
                 widget.destroy()  # Remove previous error messages
         
         id_string = self.id_entry.get()
-        int_value = self.int_entry.get()
+        int_value = self.int_entry.get() if self.question_label is None else self.question_label
+
 
         try:
             int_value = int(int_value)  # Attempt to convert to integer
@@ -321,11 +342,12 @@ class GuiApp:
 class GuiNode:
     """ROS Node for the GUI application."""
 
-    def __init__(self):
+    def __init__(self, question_label = None):
         """Initialize the GUI Node."""
         rospy.init_node('gui_node')
         self.gui_app = None
         self.gui_thread = None
+        self.question_label = question_label # from commandline, which set of questions to run
         self.lastest_question = "Waiting for message..."
 
         # Services to start and stop GUI
@@ -398,7 +420,7 @@ class GuiNode:
     def launch_gui(self):
         """Launch the Tkinter GUI application."""
         root = tk.Tk()
-        self.gui_app = GuiApp(root, self.get_question_service, self.key_id_service)
+        self.gui_app = GuiApp(root, self.get_question_service, self.key_id_service, self.question_label)
         # self.gui_app = GuiApp(root, self.next_service, self.get_question_service, self.next_value_publisher, self.id_publisher, self.key_publisher, self.scale_publisher)
         # Ensure the latest question is shown on screen immediately
         self.gui_app.update_label(self.lastest_question)
@@ -413,5 +435,11 @@ class GuiNode:
 
 if __name__ == '__main__':
     """Main entry point for the GUI Node."""
-    node = GuiNode()
+
+    try:
+        question_label = int(sys.argv[1])
+    except (IndexError, TypeError):
+        rospy.loginfo("No Question label found, prompting during startup")
+        question_label = None
+    node = GuiNode(question_label)
     node.run()

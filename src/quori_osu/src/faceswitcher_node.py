@@ -73,7 +73,9 @@ class FaceSwitcher:
         self.root = tk.Tk()
         self.root.configure(bg="black")
         self.root.attributes('-fullscreen', True)  # Fullscreen mode
-        self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
+        self.root.bind("<Escape>", self.exit_fullscreen)
+        # self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
+        self.root.attributes('-topmost', True)
 
 
         # Create a label to display the images
@@ -88,6 +90,10 @@ class FaceSwitcher:
         rospy.Service('/default_face', Empty, self.show_default_face)
         rospy.Service('/thinking_face', Empty, self.show_thinking_face)
         rospy.Service('/talking_face', Empty, self.show_talking_face)
+
+    def exit_fullscreen(self, event=None):
+        """Exit fullscreen mode."""
+        self.root.attributes('-fullscreen', False)
 
     def show_default_face(self, req):
         if self.current_image_path == self.default_face_path:
