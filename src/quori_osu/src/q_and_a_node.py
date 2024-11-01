@@ -34,7 +34,7 @@ introduction_file = os.path.join(simple_audio_path, "SimpleIntro.mp3")
 # Placeholders for KeyID info
 id_string = "default_id"  # Default value
 key_id_string = "7"  # Default key_id value
-scale_type = "Triad"  # Default scale type
+scale_type = "Likert"  # Default scale type
 
 # Question masterlist filename (should be in the format *.json)
 masterlist_name = 'masterlist.json'
@@ -69,7 +69,6 @@ next_button_count = 0
 current_delay = 0
 total_questions = 0
 rating = -1
-scale_type = "Default"
 current_process = None
 task_queue = queue.Queue()
 introduction_played = False
