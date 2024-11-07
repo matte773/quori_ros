@@ -12,7 +12,7 @@ from itertools import count
 # Code adapted from https://stackoverflow.com/questions/40619731/display-animated-gif-in-tkinter-python-3-5
 class GifLabel(tk.Label):
     """a label that displays images, and plays them if they are gifs"""
-    def load(self, im):
+    def load(self, im, global_delay = None):
         """Loads new GIF and then removes the past frame if any"""
         self.configure(bg="black")
         width = self.winfo_screenwidth()
@@ -30,7 +30,7 @@ class GifLabel(tk.Label):
                     ImageTk.PhotoImage(im.resize((width,height)))
                     )
                 try:
-                    self.delays.append(im.info['duration'])
+                    self.delays.append(im.info['duration'] if global_delay is None else global_delay)
                 except:
                     self.delays.append(100)
                 im.seek(i)
@@ -114,8 +114,8 @@ class FaceSwitcher:
             self.update_display()
         return []
 
-    def update_display(self):
-        self.label.load(self.current_image_path)
+    def update_display(self, global_delay=None):
+        self.label.load(self.current_image_path, global_delay)
 
     def run(self):
         self.root.mainloop()
