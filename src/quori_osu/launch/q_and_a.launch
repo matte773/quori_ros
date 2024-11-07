@@ -1,0 +1,7 @@
+<launch>
+    
+    <node pkg="quori_osu" type="faceswitcher_node.py" name="faceswitcher_node" output="screen"/>
+
+    <node pkg="quori_osu" type="q_and_a_node.py" name="q_and_a_node" output="screen"/>
+
+</launch>
