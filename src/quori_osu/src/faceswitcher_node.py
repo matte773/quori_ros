@@ -2,10 +2,8 @@
 
 import rospy
 from std_srvs.srv import Empty
-import cv2
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import ttk
 import os
 from itertools import count
 
