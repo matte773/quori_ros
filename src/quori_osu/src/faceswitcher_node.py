@@ -58,10 +58,11 @@ class GifLabel(tk.Label):
 class FaceSwitcher:
     def __init__(self):
         # Load the GIFs
-        home_dir = os.path.expanduser("~")
-        self.default_face_path = os.path.join(home_dir, 'Pictures/default_face.gif')
-        self.thinking_face_path = os.path.join(home_dir, 'Pictures/thinking_face.gif')
-        self.talking_face_path = os.path.join(home_dir, 'Pictures/talking_face.gif')
+        # home_dir = os.path.expanduser("~")
+        face_dir = "src/faces"
+        self.default_face_path = os.path.join(face_dir, 'default_face.gif')
+        self.thinking_face_path = os.path.join(face_dir, 'thinking_face.gif')
+        self.talking_face_path = os.path.join(face_dir, 'talking_face.gif')
         self.current_image_path = self.default_face_path
 
         # Set up Tkinter
