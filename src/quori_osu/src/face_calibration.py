@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
+'''
+Run this function to generate appropriately scaled faces for Quori. 
+Pass in an unscaled face from base_faces and an optional yaml that tracks the change.
+'''
 
-import os, sys
+
+import os, sys, yaml
 import numpy as np
 import cv2
 from PIL import Image
@@ -30,31 +35,16 @@ class Eye:
             print(f"Box Size: {self.corners[1] - self.corners[0]}")
             print("-------------------")
 
-def get_index_error(p1,p2,outer_shape):
-    """
-    Uses p1 to make sure we don't clip into negatives and p2 to make sure we don't exceed 
-    subtract this from p1 and p2 to produce valid indices.
-    """
-    minimums = np.where(p1 < 0, p1, 0) # handles negative indices
-    maximums = np.where(p2 - outer_shape + 1 > 0, p2, 0)
-    return minimums+maximums
-    
 
 def move_selected_pixels(image, bounding_box, dx, dy):
     """
-    Move a selection of the image, handles edge cases poorly
+    Move a selection of the image, doesn't handle edge cases
     """
     p1, p2 = bounding_box
     selection = image[p1[1]:p2[1], p1[0]:p2[0]].copy()
     image[p1[1]:p2[1], p1[0]:p2[0]] = np.mean(image)
     p1_prime = p1 + np.array((dx, dy))
     p2_prime = p2 + np.array((dx, dy))
-    bounding_error = get_index_error(p1_prime, p2_prime, image.shape[0:2])
-    print(p1_prime)
-    print(p2_prime)
-    print(bounding_error)
-    p1_prime -= bounding_error
-    p2_prime -= bounding_error
     image[p1_prime[1]:p2_prime[1], p1_prime[0]:p2_prime[0]] = selection
     return p1_prime, p2_prime
 
@@ -69,10 +59,25 @@ def stretch_selected_pixels(image, bounding_box, sx, sy):
     image[p1[1]:p2[1], p1[0]:p2[0]] = np.mean(image)
     center = (p1 + p2) / 2
     p1_prime = np.uint16(center - out_shape // 2)
-    p2_prime = np.uint16(center + (out_shape - out_shape // 2)) # handles odd numbers
-    
+    p2_prime = np.uint16(center + (out_shape - out_shape // 2)) # handles when shape%2==1 
     image[p1_prime[1]:p2_prime[1], p1_prime[0]:p2_prime[0]] = selection
     return p1_prime, p2_prime
+
+
+def find_eyes(image, min_radius=60):
+    # need to specify min_radius because otherwise we find the inner circles too. And the thinking bubbles.
+    im_rgb = image.convert('RGB')
+    pixels = np.array(im_rgb).astype(np.uint8)
+    gray = cv2.cvtColor(pixels, cv2.COLOR_RGB2GRAY)
+    circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,20,
+                            param1=50,param2=30,minRadius=min_radius,maxRadius=0)
+ 
+    if len(circles[0]) != 2:
+        print(f"Did not detect two eyes, instead found: {circles}")
+        exit(1)
+    
+    # hold the eyes ready for processing
+    return [Eye(c, gray.shape) for c in circles[0]]
 
 
 def shift_eyes(image, eyes, ops):
@@ -80,22 +85,22 @@ def shift_eyes(image, eyes, ops):
     pixels = np.array(image).astype(np.uint16)
     output = pixels.copy()
     for i in range(len(eyes)):
-        op = ops[str(i)]
-        eyes[i].corners = move_selected_pixels(output, eyes[i].corners, dx=op['dx'], dy=op['dy'])
-        eyes[i].corners = stretch_selected_pixels(output, eyes[i].corners, sx=op['sx'], sy=op['sy'])
+        op = ops[i]
+        new_corners = move_selected_pixels(output, eyes[i].corners, dx=op['dx'], dy=op['dy'])
+        new_corners = stretch_selected_pixels(output, new_corners, sx=op['sx'], sy=op['sy'])
     return Image.fromarray(np.uint8(output))
 
 
 if __name__ == "__main__":
-    
+    # default movements to run if yaml not provided
     operations = {
-        '0': { # First Eye
-            'dx': 10,
-            'dy': 20,
-            'sx': 1.1,
-            'sy': 1.1, 
+        0: { # First Eye
+            'dx': 0,
+            'dy': 0,
+            'sx': 1,
+            'sy': 1, 
         },
-        '1': { # Second Eye
+        1: { # Second Eye
             'dx': 0,
             'dy': 0,
             'sx': 1,
@@ -105,26 +110,19 @@ if __name__ == "__main__":
     try:
         filepath = sys.argv[1]
         im = Image.open(filepath)
-        im = im.convert('RGB')
-        pixels = np.array(im)
-        pixels = pixels.astype(np.uint8)
-        output = pixels.copy()
-
+        try:
+            yaml_filepath = sys.argv[2]
+            with open(yaml_filepath) as file:
+                operations = yaml.safe_load(file)
+        except IndexError:
+            pass # use default dict
+   
     except Exception as e:
         print(f"Usage: python3 {sys.argv[0]} <Image_Filename> [transform_list_yaml]")
         raise e
 
-
-    gray = cv2.cvtColor(pixels, cv2.COLOR_RGB2GRAY)
-    circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT,1,20,
-                            param1=50,param2=30,minRadius=60,maxRadius=0)
- 
-    if len(circles[0]) != 2:
-        print(f"Did not detect two eyes, instead found: {circles}")
-        exit(1)
-    
-    # hold the eyes ready for processing
-    eyes = [Eye(c, gray.shape) for c in circles[0]]
+    # use hough to localize eyes in the image. Because we hold this constant, eyes cannot get larger during the gif
+    eyes = find_eyes(im)
 
     images = []
     delays = []

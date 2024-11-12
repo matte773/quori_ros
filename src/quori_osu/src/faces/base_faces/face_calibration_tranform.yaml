@@ -1,0 +1,12 @@
+# To be used with face_calibration.py to move and scale Quori's eyes programatically: Eyes cannot grow bigger during the gif
+
+0:
+  dx: 30   # move in x (positive is right)
+  dy: 0    # move in y (positive is down)
+  sx: 1.2  # scale in x (make sure you have the space to scale if sx > 1)
+  sy: 1.2  # scale in y (make sure you have the space to scale if sy > 1)
+1:
+  dx: 0
+  dy: 0
+  sx: 1
+  sy: 1
