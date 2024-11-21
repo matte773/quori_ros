@@ -19,7 +19,7 @@ class GifLabel(tk.Label):
         if isinstance(im, str):
             im = Image.open(im)
         next_frames = []
-        self.delays = []
+        new_delays = []
         # try to do this before unloading current image
         try:
             for i in count(1):
@@ -28,9 +28,9 @@ class GifLabel(tk.Label):
                     ImageTk.PhotoImage(im.resize((width,height)))
                     )
                 try:
-                    self.delays.append(im.info['duration'] if global_delay is None else global_delay)
+                    new_delays.append(im.info['duration'] if global_delay is None else global_delay)
                 except:
-                    self.delays.append(100)
+                    new_delays.append(100)
                 im.seek(i)
         except EOFError:
             pass
@@ -40,6 +40,7 @@ class GifLabel(tk.Label):
             self.after_cancel(self.after_call)
         self.frames = next_frames
         self.loc = 0
+        self.delays = new_delays
 
         if len(self.frames) == 1:
             self.config(image=self.frames[0])
@@ -59,7 +60,7 @@ class FaceSwitcher:
     def __init__(self):
         # Load the GIFs
         # home_dir = os.path.expanduser("~")
-        face_dir = "src/faces"
+        face_dir = "/opt/quori/src/quori_osu/src/faces"
         self.default_face_path = os.path.join(face_dir, 'default_face.gif')
         self.thinking_face_path = os.path.join(face_dir, 'thinking_face.gif')
         self.talking_face_path = os.path.join(face_dir, 'talking_face.gif')
