@@ -570,7 +570,6 @@ def joy_callback(data):
                 # Call the service
                 remote_update_service(req)
                 # response = remote_update_service(req)
-                # rospy.loginfo(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Service call succeeded: {response}")
             except rospy.ServiceException as e:
                 rospy.logerr(f"!!!!!!!!!! Service call failed: {e}")
 

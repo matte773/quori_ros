@@ -55,7 +55,7 @@ def stretch_selected_pixels(image, bounding_box, sx, sy):
     """
     p1, p2 = bounding_box
     selection = cv2.resize(image[p1[1]:p2[1], p1[0]:p2[0]], (0,0), fx=sx, fy=sy)
-    out_shape = np.array(selection.shape[0:2])
+    out_shape = np.flip(selection.shape[0:2])
     image[p1[1]:p2[1], p1[0]:p2[0]] = np.mean(image)
     center = (p1 + p2) / 2
     p1_prime = np.uint16(center - out_shape // 2)
@@ -77,7 +77,9 @@ def find_eyes(image, min_radius=60):
         exit(1)
     
     # hold the eyes ready for processing
-    return [Eye(c, gray.shape) for c in circles[0]]
+    eyes = [Eye(c, gray.shape) for c in circles[0]]
+    eyes.sort(key=lambda eye: eye.center[0])
+    return eyes
 
 
 def shift_eyes(image, eyes, ops):
