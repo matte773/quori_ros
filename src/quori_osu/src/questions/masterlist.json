@@ -1,0 +1,180 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the sum of 2+2?",
+      "answer": "The sum of two plus two is four.",
+      "audio_file": "TwoPlusTwo.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 2,
+      "question": "How many days are in a week?",
+      "answer": "There are seven days in a week.",
+      "audio_file": "SevenDaysAWeek.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 3,
+      "question": "How many letters are in the English alphabet?",
+      "answer": "There are twenty-six letters in the English alphabet.",
+      "audio_file": "EnglishLetters.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 4,
+      "question": "How many minutes are in an hour?",
+      "answer": "There are sixty minutes in an hour.",
+      "audio_file": "SixtyMin.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 5,
+      "question": "How many sides does a triangle have?",
+      "answer": "A triangle has three sides.",
+      "audio_file": "Triangle.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 6,
+      "question": "What color is the sky?",
+      "answer": "The sky is blue.",
+      "audio_file": "BlueSky.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 7,
+      "question": "What is the capital of France?",
+      "answer": "The capital of France is Paris.",
+      "audio_file": "ParisCapital.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 8,
+      "question": "What is the capital of Italy?",
+      "answer": "The capital of Italy is Rome.",
+      "audio_file": "RomeCapital.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 9,
+      "question": "What is the capital of the United States?",
+      "answer": "The capital of the United States is Washington D.C.",
+      "audio_file": "DCCapital.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 10,
+      "question": "What is the currency of Japan?",
+      "answer": "The currency of Japan is the yen.",
+      "audio_file": "Yen.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 11,
+      "question": "What is the largest planet in our solar system?",
+      "answer": "The largest planet in our solar system is Jupiter.",
+      "audio_file": "Jupiter.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 12,
+      "question": "What is the square root of 16?",
+      "answer": "The square root of sixteen is four.",
+      "audio_file": "SQRTFour.mp3",
+      "type": "simple"
+    },
+    {
+      "id": 13,
+      "question": "How do black holes form?",
+      "answer": "Black holes form from the gravitational collapse of massive stars after they exhaust their nuclear fuel. The core contracts to a point of infinite density, creating a singularity surrounded by an event horizon.",
+      "audio_file": "BlackHole.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 14,
+      "question": "How does CRISPR-Cas9 technology work for gene editing?",
+      "answer": "CRISPR-Cas9 technology works by using a guide RNA to direct the Cas9 enzyme to a specific DNA sequence, where it makes a cut. This allows for the addition, removal, or alteration of genetic material at the targeted location.",
+      "audio_file": "CRISPR.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 15,
+      "question": "How does the endocrine system regulate bodily functions?",
+      "answer": "The endocrine system regulates bodily functions through hormones, which are chemical messengers released by glands and transported through the bloodstream to target organs.",
+      "audio_file": "Endocrine.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 16,
+      "question": "How does the human immune system recognize and combat pathogens?",
+      "answer": "The human immune system recognizes pathogens through receptors that detect specific antigens. It combats pathogens using a combination of innate and adaptive immune responses, involving white blood cells, antibodies, and various signaling molecules.",
+      "audio_file": "Immune.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 17,
+      "question": "How does the process of meiosis differ from mitosis?",
+      "answer": "Meiosis differs from mitosis in that it involves two rounds of cell division, resulting in four genetically distinct haploid cells, whereas mitosis results in two identical diploid cells.",
+      "audio_file": "Meiosis.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 18,
+      "question": "What are the characteristics of a supernova?",
+      "answer": "A supernova is a powerful and luminous explosion of a star, resulting from the collapse of a massive star's core or the detonation of a white dwarf. It releases immense energy and enriches the interstellar medium with heavy elements.",
+      "audio_file": "Supernova.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 19,
+      "question": "What are the mechanisms of enzyme catalysis?",
+      "answer": "Enzyme catalysis mechanisms include substrate binding, transition state stabilization, and lowering the activation energy of biochemical reactions.",
+      "audio_file": "Catalysis.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 20,
+      "question": "What are the principles of quantum mechanics?",
+      "answer": "The principles of quantum mechanics include wave-particle duality, quantization of energy, superposition, and entanglement.",
+      "audio_file": "Quantum.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 21,
+      "question": "What is the function of chlorophyll in photosynthesis?",
+      "answer": "Chlorophyll is a pigment in plants that absorbs light energy, primarily in the blue and red wavelengths, and converts it into chemical energy during photosynthesis.",
+      "audio_file": "Chlorophyll.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 22,
+      "question": "What is the function of ribosomes in a cell?",
+      "answer": "Ribosomes are responsible for protein synthesis, reading mRNA sequences and assembling amino acids into polypeptide chains according to the genetic code.",
+      "audio_file": "Ribosomes.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 23,
+      "question": "What is the process of DNA replication?",
+      "answer": "DNA replication is the process by which a double-stranded DNA molecule is copied to produce two identical DNA molecules. It involves the unwinding of the double helix, the formation of a replication fork, and the synthesis of new complementary strands by DNA polymerase.",
+      "audio_file": "DNA.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 24,
+      "question": "What is the process of protein synthesis?",
+      "answer": "Protein synthesis involves transcription, where DNA is transcribed into mRNA, and translation, where ribosomes read the mRNA sequence to assemble amino acids into a polypeptide chain.",
+      "audio_file": "Protein.mp3",
+      "type": "complex"
+    },
+    {
+      "id": 25,
+      "question": "What is the process of transcription and translation in gene expression?",
+      "answer": "Transcription is the process of copying a gene's DNA sequence into mRNA, and translation is the process where ribosomes read the mRNA to synthesize proteins based on the genetic code.",
+      "audio_file": "Transcription.mp3",
+      "type": "complex"
+    }
+  ]
+}
+

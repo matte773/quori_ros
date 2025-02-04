@@ -6,6 +6,7 @@ from datetime import datetime
 import random
 import rospy
 import os
+import roslib.packages
 import subprocess
 import threading
 import signal
@@ -23,6 +24,8 @@ from quori_osu.srv import GetQuestion, GetQuestionRequest, KeyID, KeyIDResponse
 # simple_audio_path = "/home/quori6/Music/darksideofthemoon/"
 # introduction_file = os.path.join(simple_audio_path, "Brain Damage.mp3")
 
+# Get the package's base directory (e.g., /opt/quori/src/quori_osu)
+package_base_path = roslib.packages.get_pkg_dir('quori_osu')
 
 # Simple Questions from Survey
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -39,11 +42,24 @@ scale_type = "Likert"  # Default scale type
 # Question masterlist filename (should be in the format *.json)
 masterlist_name = 'masterlist.json'
 
-# Default file paths for key and masterlist
-key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
-csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', f'{id_string}_key{key_id_string}_log_{current_time}.csv')
-masterlist_file_path = os.path.join(home_dir, 'Documents/q_and_a_json_files/', masterlist_name)
+# Create the relative paths to your key and masterlist files
+logging_location = os.path.join(package_base_path, 'logs')
+questions_location = os.path.join(package_base_path, 'src', 'questions')
 
+# Now you can build other paths similarly
+key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
+csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
+masterlist_file_path = os.path.join(questions_location, masterlist_name)
+
+# logging_location = os.path.expanduser('/opt/quori/src/quori_osu/logs')
+# questions_location = os.path.expanduser('/opt/quori/src/quori_osu/src/questions')
+# key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
+# csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
+# masterlist_file_path = os.path.join(questions_location, masterlist_name)
+
+# key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
+# csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', f'{id_string}_key{key_id_string}_log_{current_time}.csv')
+# masterlist_file_path = os.path.join(home_dir, 'Documents/q_and_a_json_files/', masterlist_name)
 
 # Global variables for questions and answers
 question_id_list = []
@@ -57,7 +73,7 @@ complexity_list = []
 response_list = []
 
 # Delay times in seconds
-delay_times = [0, 0.5, 1, 1.5, 2, 2.5, 3]
+delay_times = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 # Indexes and counters
 current_text_index = 0
 current_audio_index = 0
@@ -175,64 +191,65 @@ def initialize_questions_and_answers():
 
 # Functions
 
-def show_image_fullscreen(image_name):
-    # Create a new Tkinter window
-    root = tk.Tk()
+# def show_image_fullscreen(image_name):
+#     # Create a new Tkinter window
+#     root = tk.Tk()
     
-    # Make the window fullscreen
-    root.attributes('-fullscreen', True)
+#     # Make the window fullscreen
+#     root.attributes('-fullscreen', True)
     
-    # Load the image from the Pictures folder
-    image_path = os.path.expanduser(f'~/Pictures/{image_name}')
-    image = Image.open(image_path)
+#     # Load the image from the Pictures folder
+#     image_path = os.path.expanduser(f'~/Pictures/{image_name}')
+#     image = Image.open(image_path)
     
-    # Convert the image to a format Tkinter can use
-    tk_image = ImageTk.PhotoImage(image)
+#     # Convert the image to a format Tkinter can use
+#     tk_image = ImageTk.PhotoImage(image)
     
-    # Create a label to display the image
-    label = tk.Label(root, image=tk_image)
-    label.pack(expand=True)
+#     # Create a label to display the image
+#     label = tk.Label(root, image=tk_image)
+#     label.pack(expand=True)
     
-    # Bring the window to the front
-    root.lift()
-    root.attributes('-topmost', True)
+#     # Bring the window to the front
+#     root.lift()
+#     root.attributes('-topmost', True)
     
-    # Bind the 'Escape' key to close the window
-    root.bind("<Escape>", lambda e: root.quit())
+#     # Bind the 'Escape' key to close the window
+#     root.bind("<Escape>", lambda e: root.quit())
     
-    # Start the Tkinter main loop
-    root.mainloop()
+#     # Start the Tkinter main loop
+#     root.mainloop()
 
-def monitor_console_output(command):
-    """Monitor the console output of a subprocess for specific strings."""
-    global audio_playing
+# def monitor_console_output(command):
+#     """Monitor the console output of a subprocess for specific strings."""
+#     global audio_playing
 
-    # Start the subprocess with the command
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#     # Start the subprocess with the command
+#     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    while True:
-        # Read the output line by line
-        output = process.stdout.readline()
-        if output == '':
-            break
-        if output:
-            # Check for specific strings in the output
-            if 'Now playing' in output:
-                audio_playing = True
-                print("Audio playing status: True")
-            elif 'Decoding of' in output:
-                audio_playing = False
-                print("Audio playing status: False")
+#     while True:
+#         # Read the output line by line
+#         output = process.stdout.readline()
+#         if output == '':
+#             break
+#         if output:
+#             # Check for specific strings in the output
+#             if 'Now playing' in output:
+#                 audio_playing = True
+#                 print("Audio playing status: True")
+#             elif 'Decoding of' in output:
+#                 audio_playing = False
+#                 print("Audio playing status: False")
     
-    # Wait for the process to finish
-    process.wait()
+#     # Wait for the process to finish
+#     process.wait()
 
 
 def update_csv_file_path():
     """Update the CSV file path based on the user ID and key ID."""
     global csv_file_path
-    csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', 
-                                 f'{id_string}_key{key_id_string}_log_{current_time}.csv')
+    # csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', 
+                                #  f'{id_string}_key{key_id_string}_log_{current_time}.csv')
+    csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
     rospy.loginfo(f"Updated CSV file path to: {csv_file_path}")
 
 
@@ -322,7 +339,8 @@ def handle_key_service(req):
     id_string = req.user_id
     scale_type = req.scale_type  # If needed, handle `scale_type` for further logic
     
-    new_key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
+    # new_key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
+    new_key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
     
     # Load the new key file
     try:
@@ -348,7 +366,7 @@ def swap_faces(face_service):
     """Swap faces using the face service."""
     try:
         face_service(EmptyRequest())
-        rospy.loginfo(f"Face Swapped Successfully: {face_service}")
+        rospy.loginfo(f"Face Swapped Successfully: {face_service_dict}")
     except rospy.ServiceException as e:
         rospy.logerr(f"Failed to call face swap service: {e}")
 
