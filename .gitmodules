@@ -10,3 +10,6 @@
 [submodule "src/astra_ros"]
 	path = src/astra_ros
 	url = https://github.com/semio-ai/astra_ros.git
+[submodule "src/quori_osu/src/quori_osu_supplemental"]
+	path = src/quori_osu/src/quori_osu_supplemental
+	url = https://github.com/matte773/quori_osu_supplemental.git
