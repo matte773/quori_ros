@@ -2,6 +2,9 @@
 
 This catkin workspace contains all of the ROS packages necessary for full operation of the Quori robot platform from UPenn.
 
+## This quori_ros
+This fork of quori_osu was created and maintained by Matthew Miller in 2023 when beginning work on the OSU Quori (quori6). This has since added the 2024 REU as well as the Quori Q&A project code to it. The majority of additions are added to a quori_osu packing located in quori_ros/src.
+
 ## Prerequisites
 
 The package is compatible with **Ubuntu 16.04 / ROS Kinetic** and **Ubuntu 20.04 / ROS Noetic**, built with the **Catkin** system. Make sure you have the right environment configured.
