@@ -70,8 +70,10 @@ class FaceSwitcher:
         self.root = tk.Tk()
         self.root.configure(bg="black")
         self.root.attributes('-fullscreen', True)  # Fullscreen mode
-        self.root.bind("f", self.toggle_fullscreen)
-        self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
+        # self.root.bind("f", self.toggle_fullscreen)
+        self.root.bind("<Escape>", self.toggle_fullscreen)
+        # self.root.bind("<Escape>", lambda e: self.root.quit())  # Exit on Escape key
+        self.root.bind("<Control-c>", lambda e: self.root.quit())
         self.root.attributes('-topmost', True) # keeps it on top permanently
 
 

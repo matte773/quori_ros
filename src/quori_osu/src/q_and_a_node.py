@@ -30,9 +30,12 @@ package_base_path = roslib.packages.get_pkg_dir('quori_osu')
 # Simple Questions from Survey
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 home_dir = os.path.expanduser("~")
-simple_audio_path = os.path.join(home_dir, 'Music/simple_questions/')
-complex_audio_path = os.path.join(home_dir, 'Music/complex_questions/')
-introduction_file = os.path.join(simple_audio_path, "SimpleIntro.mp3")
+quori_supplimental_path = os.path.join('quori_osu_supplemental')
+# simple_audio_path = os.path.join(home_dir, 'Music/simple_questions/')
+# complex_audio_path = os.path.join(home_dir, 'Music/complex_questions/')
+simple_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'simple/')
+complex_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'complex/')
+# introduction_file = os.path.join(quori_supplimental_path, 'q_an_a_audiofiles/', "SimpleIntro.mp3")
 
 # Placeholders for KeyID info
 id_string = "default_id"  # Default value
@@ -44,7 +47,7 @@ masterlist_name = 'masterlist.json'
 
 # Create the relative paths to your key and masterlist files
 logging_location = os.path.join(package_base_path, 'logs')
-questions_location = os.path.join(package_base_path, 'src', 'questions')
+questions_location = os.path.join(package_base_path, 'src', quori_supplimental_path, 'questions')
 
 # Now you can build other paths similarly
 key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
@@ -366,7 +369,7 @@ def swap_faces(face_service):
     """Swap faces using the face service."""
     try:
         face_service(EmptyRequest())
-        rospy.loginfo(f"Face Swapped Successfully: {face_service_dict}")
+        rospy.loginfo(f"Face Swapped Successfully")
     except rospy.ServiceException as e:
         rospy.logerr(f"Failed to call face swap service: {e}")
 

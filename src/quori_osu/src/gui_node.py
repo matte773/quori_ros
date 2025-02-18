@@ -33,7 +33,9 @@ class GuiApp:
         self.root.attributes('-fullscreen', True)
 
         # Bind the ESC key to exit fullscreen
-        self.root.bind("<Escape>", self.exit_fullscreen)
+        # self.root.bind("<Escape>", self.exit_fullscreen)
+        self.root.bind("<Escape>", self.toggle_fullscreen)
+        self.root.bind("<Control-c>", lambda e: self.root.quit())
 
         # Initialize services
         self.question_service = question_service
