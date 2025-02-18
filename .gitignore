@@ -2,5 +2,5 @@ devel
 build
 .DS_Store
 ._.DS_Store
-/src/quori_osu/src/REU_2024/yolov3.weights
-/src/quori_osu/logs/*
+src/quori_osu/src/REU_2024/yolov3.weights
+src/quori_osu/logs/*
