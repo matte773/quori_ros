@@ -10,9 +10,9 @@ from itertools import count
 # Code adapted from https://stackoverflow.com/questions/40619731/display-animated-gif-in-tkinter-python-3-5
 class GifLabel(tk.Label):
     """a label that displays images, and plays them if they are gifs"""
+
     def load(self, im, global_delay = None):
         """Loads new GIF and then removes the past frame if any"""
-        self.configure(bg="black")
         width = self.winfo_screenwidth()
         height = self.winfo_screenheight()
         
@@ -30,17 +30,21 @@ class GifLabel(tk.Label):
                 try:
                     new_delays.append(im.info['duration'] if global_delay is None else global_delay)
                 except:
-                    new_delays.append(100)
+                    new_delays.append(1)
                 im.seek(i)
         except EOFError:
             pass
+        outframes = next_frames.copy()
+
+
+        self.frames = outframes
+        self.loc = 0
+        self.delays = new_delays
 
         #stop updating previous image
         if hasattr(self, 'after_call'):
             self.after_cancel(self.after_call)
-        self.frames = next_frames
-        self.loc = 0
-        self.delays = new_delays
+
 
         if len(self.frames) == 1:
             self.config(image=self.frames[0])
@@ -77,8 +81,10 @@ class FaceSwitcher:
         self.root.attributes('-topmost', True) # keeps it on top permanently
 
 
+
         # Create a label to display the images
         self.label = GifLabel(self.root)
+        self.label.configure(bg="black")
         self.label.pack(expand=True)
         self.label.load(self.current_image_path)
 

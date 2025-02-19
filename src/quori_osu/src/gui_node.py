@@ -6,6 +6,7 @@ import sys
 from threading import Thread
 import tkinter as tk
 import subprocess
+import random
 from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 
 # Global variables
@@ -61,12 +62,17 @@ class GuiApp:
         self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
         self.id_entry.pack(pady=10)
 
-        if self.question_label is None:
-            # Integer Entry
-            self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
-            self.int_label.pack(pady=10)
-            self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
-            self.int_entry.pack(pady=10)
+        # if self.question_label is None:
+        #     # Integer Entry
+        #     self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
+        #     self.int_label.pack(pady=10)
+        #     self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
+        #     self.int_entry.pack(pady=10)
+
+        # Generate a random key integer between 0 and 99
+        self.random_key_value = random.randint(0, 99)  # Random int between 0 and 99
+
+        self.scale_type = "Likert" # Default scale set to Likert
 
         # Toggle Button for Scale Type
         self.scale_toggle_button = tk.Button(
@@ -157,8 +163,10 @@ class GuiApp:
         # Buttons frame
         self.frame = tk.Frame(self.container_frame, bg=LIGHT_BLUE)
         self.frame.pack(side=tk.TOP, pady=20)
-        
 
+        width = self.frame.winfo_width()
+        height = self.frame.winfo_height()
+        
         self.buttons = []
         self.selected_button = None  # Track the selected button
 
@@ -171,8 +179,8 @@ class GuiApp:
 
             # Use the same font and size as the submit button
             button_font = ("Arial", 24)
-            button_width = 20
-            button_height = 2
+            button_width = width // 4
+            button_height = height // 8
         else:
             button_config = [
                 ("Strongly Disagree", "#FF8981", "#FFCCC7"),  # Softer red and lighter soft red
@@ -184,8 +192,8 @@ class GuiApp:
 
             # Use the same font and size as the submit button
             button_font = ("Arial", 24)
-            button_width = 15
-            button_height = 2
+            button_width = width // 6
+            button_height = height // 8
 
         for i, (label, color, selected_color) in enumerate(button_config):
             btn = tk.Button(
@@ -221,10 +229,13 @@ class GuiApp:
             rospy.logwarn(f"Failed to bring window to front: {e}")
 
 
-    def exit_fullscreen(self, event=None):
-        """Exit fullscreen mode."""
-        self.root.attributes('-fullscreen', False)
+    # def exit_fullscreen(self, event=None):
+    #     """Exit fullscreen mode."""
+    #     self.root.attributes('-fullscreen', False)
 
+    def toggle_fullscreen(self, event=None):
+        """Exit fullscreen mode."""
+        self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
 
     def send_key_id(self):
         """Send the user ID, key ID, and scale type to the /key_id service."""
@@ -235,8 +246,8 @@ class GuiApp:
                 widget.destroy()  # Remove previous error messages
         
         id_string = self.id_entry.get()
-        int_value = self.int_entry.get() if self.question_label is None else self.question_label
-
+        # int_value = self.int_entry.get() if self.question_label is None else self.question_label
+        int_value = self.random_key_value
 
         try:
             int_value = int(int_value)  # Attempt to convert to integer

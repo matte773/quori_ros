@@ -81,8 +81,16 @@ def find_eyes(image, min_radius=60):
     eyes.sort(key=lambda eye: eye.center[0])
     return eyes
 
+def getBackgroundColor(image, eyes):
+    """gets the background color of the face."""
+    im_rgb = image.convert('RGB')
+    pixels = np.array(im_rgb).astype(np.uint8)
+    gray = cv2.cvtColor(pixels, cv2.COLOR_RGB2GRAY)
+    return np.mean(gray)
+
 
 def shift_eyes(image, eyes, ops):
+    """shifts the eyes based on the operations provided."""
     image = image.convert('RGB')
     pixels = np.array(image).astype(np.uint16)
     output = pixels.copy()
@@ -90,6 +98,15 @@ def shift_eyes(image, eyes, ops):
         op = ops[i]
         new_corners = move_selected_pixels(output, eyes[i].corners, dx=op['dx'], dy=op['dy'])
         new_corners = stretch_selected_pixels(output, new_corners, sx=op['sx'], sy=op['sy'])
+    return Image.fromarray(np.uint8(output))
+
+def zero_background(image, color):
+    """zeros out the background of the image."""
+    image = image.convert('RGB')
+    pixels = np.array(image).astype(np.uint16)
+    output = pixels.copy()
+    gray = cv2.cvtColor(output, cv2.COLOR_RGB2GRAY)
+    output[gray <= 50] = color
     return Image.fromarray(np.uint8(output))
 
 
@@ -125,13 +142,14 @@ if __name__ == "__main__":
 
     # use hough to localize eyes in the image. Because we hold this constant, eyes cannot get larger during the gif
     eyes = find_eyes(im)
+    color = getBackgroundColor(im, eyes)
 
     images = []
     delays = []
     try:
         for i in count(1):
             images.append(
-                shift_eyes(im, eyes, operations)
+                zero_background(shift_eyes(im, eyes, operations), color)
                 )
             try:
                 delays.append(im.info['duration'])
@@ -142,4 +160,4 @@ if __name__ == "__main__":
         pass
 
     filename = filepath.split(os.sep)[-1]
-    images[0].save(os.path.join('src/faces', filename), save_all=True, append_images=images[1:], duration=delays)
+    images[0].save(os.path.join('faces', filename), save_all=True, append_images=images[1:], duration=delays)

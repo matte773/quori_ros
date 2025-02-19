@@ -95,6 +95,7 @@ gui_started = False
 updated_id = False
 all_questions_exhausted = False
 audio_playing = False
+on_default_face = True
 
 def init():
     """Initialize the audio output and set the delay for the first question."""
@@ -458,6 +459,10 @@ def introduction():
 def play_with_delay(file_path, delay):
     """Function to play audio after a delay using threading."""
     def delayed_play():
+        global on_default_face
+        if not on_default_face:
+            return
+        on_default_face = False
         if delay > 0:
             swap_faces(face_service_dict['thinking_face'])
         rospy.loginfo(f"Waiting for {delay} seconds before playing.")
@@ -467,6 +472,7 @@ def play_with_delay(file_path, delay):
         swap_faces(face_service_dict['talking_face'])
         play_audio(file_path)
         swap_faces(face_service_dict['default_face'])
+        on_default_face = True
 
     threading.Thread(target=delayed_play).start()
 
