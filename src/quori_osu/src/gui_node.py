@@ -172,26 +172,26 @@ class GuiApp:
 
         if scale_type == "Triad":
             button_config = [
-                ("Too Slow", "#FF9999", "#FFCCCC"),        # Soft red and lighter soft red
+                ("   Too Slow  ", "#FF9999", "#FFCCCC"),        # Soft red and lighter soft red
                 ("Somewhat Slow", "#FFD1A6", "#FFE5CC"),   # Soft amber and lighter soft amber
-                ("Not Slow", "#99FF99", "#CCFFCC"),        # Soft green and lighter soft green
+                ("   Not Slow  ", "#99FF99", "#CCFFCC"),        # Soft green and lighter soft green
             ]
 
             # Use the same font and size as the submit button
-            button_font = ("Arial", 24)
+            button_font = ("Arial", 20)
             button_width = width // 4
             button_height = height // 8
         else:
             button_config = [
                 ("Strongly Disagree", "#FF8981", "#FFCCC7"),  # Softer red and lighter soft red
-                ("Disagree", "#FFB54C", "#FFD6A1"),           # Same orange and lighter orange
-                ("Neutral", "#F8D66D", "#FAE6A8"),            # Same yellow and lighter yellow
-                ("Agree", GREEN, LIGHT_GREEN),              # Same green and lighter green
-                ("Strongly Agree", "#6FAF72", "#AFCFB2"),     # Darker green and lighter green
+                ("     Disagree    ", "#FFB54C", "#FFD6A1"),           # Same orange and lighter orange
+                ("      Neutral    ", "#F8D66D", "#FAE6A8"),            # Same yellow and lighter yellow
+                ("       Agree     ", GREEN, LIGHT_GREEN),              # Same green and lighter green
+                ("  Strongly Agree ", "#6FAF72", "#AFCFB2"),     # Darker green and lighter green
             ]
 
             # Use the same font and size as the submit button
-            button_font = ("Arial", 24)
+            button_font = ("Arial", 20)
             button_width = width // 6
             button_height = height // 8
 
@@ -208,6 +208,23 @@ class GuiApp:
             )
             btn.pack(side=tk.LEFT, anchor=tk.CENTER, padx=5)
             self.buttons.append(btn)
+
+
+        # Adjust row height and column width for responsiveness
+        for col in range(5):
+            self.frame.grid_columnconfigure(col, weight=1)
+
+        self.frame.update_idletasks()
+
+    def calculate_dynamic_font_size(self):
+        """Calculate a dynamic font size based on available space."""
+        width = self.frame.winfo_width()  # Get the width of the button container frame
+        available_width = width // 5  # Divide by 5 because we have 5 buttons
+        font_size = available_width // 10  # Adjust this ratio to get the ideal font size
+        
+        # Ensure a minimum font size to prevent being too small
+        return max(font_size, 14)  # Ensure the font size is at least 14
+
 
 
     def bring_to_front(self):
