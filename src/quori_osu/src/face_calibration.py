@@ -81,6 +81,7 @@ def find_eyes(image, min_radius=60):
     eyes.sort(key=lambda eye: eye.center[0])
     return eyes
 
+
 def getBackgroundColor(image, eyes):
     """gets the background color of the face."""
     im_rgb = image.convert('RGB')
@@ -99,6 +100,7 @@ def shift_eyes(image, eyes, ops):
         new_corners = move_selected_pixels(output, eyes[i].corners, dx=op['dx'], dy=op['dy'])
         new_corners = stretch_selected_pixels(output, new_corners, sx=op['sx'], sy=op['sy'])
     return Image.fromarray(np.uint8(output))
+
 
 def zero_background(image, color):
     """zeros out the background of the image."""

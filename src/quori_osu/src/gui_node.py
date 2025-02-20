@@ -10,10 +10,11 @@ import random
 from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 
 # Global variables
-lastest_question = "Waiting for message..."
-scale_type = "Likert"
-LIGHT_BLUE = "#d4e1ff"
+lastest_question = "Waiting for message..." # Default message
+scale_type = "Likert" # Default scale type
 
+# Color constants
+LIGHT_BLUE = "#d4e1ff"
 GREEN = "#8CD47E"
 LIGHT_GREEN = "#C4E6C1"
 
@@ -46,11 +47,6 @@ class GuiApp:
         self.create_id_screen()
 
 
-        # Create a timer that updates the GUI every second
-        # self.root.after(1000, self.update_label)
-        # self.root.after(1000, self.update_label_with_latest_question)
-
-
     def create_id_screen(self):
         """Set up the screen to enter the ID and integer value."""
         self.id_frame = tk.Frame(self.root, bg=LIGHT_BLUE)
@@ -62,6 +58,7 @@ class GuiApp:
         self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
         self.id_entry.pack(pady=10)
 
+        # This is left in so that a field for the JSON Key can be typed in on the initial GUI screen
         # if self.question_label is None:
         #     # Integer Entry
         #     self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
@@ -71,8 +68,6 @@ class GuiApp:
 
         # Generate a random key integer between 0 and 99
         self.random_key_value = random.randint(0, 99)  # Random int between 0 and 99
-
-        self.scale_type = "Likert" # Default scale set to Likert
 
         # Toggle Button for Scale Type
         self.scale_toggle_button = tk.Button(
@@ -216,6 +211,7 @@ class GuiApp:
 
         self.frame.update_idletasks()
 
+
     def calculate_dynamic_font_size(self):
         """Calculate a dynamic font size based on available space."""
         width = self.frame.winfo_width()  # Get the width of the button container frame
@@ -224,7 +220,6 @@ class GuiApp:
         
         # Ensure a minimum font size to prevent being too small
         return max(font_size, 14)  # Ensure the font size is at least 14
-
 
 
     def bring_to_front(self):
@@ -246,13 +241,15 @@ class GuiApp:
             rospy.logwarn(f"Failed to bring window to front: {e}")
 
 
-    # def exit_fullscreen(self, event=None):
-    #     """Exit fullscreen mode."""
-    #     self.root.attributes('-fullscreen', False)
+    def exit_fullscreen(self, event=None):
+        """Exit fullscreen mode."""
+        self.root.attributes('-fullscreen', False)
+
 
     def toggle_fullscreen(self, event=None):
         """Exit fullscreen mode."""
         self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
+
 
     def send_key_id(self):
         """Send the user ID, key ID, and scale type to the /key_id service."""
@@ -263,7 +260,6 @@ class GuiApp:
                 widget.destroy()  # Remove previous error messages
         
         id_string = self.id_entry.get()
-        # int_value = self.int_entry.get() if self.question_label is None else self.question_label
         int_value = self.random_key_value
 
         try:
@@ -271,7 +267,7 @@ class GuiApp:
             rospy.loginfo(f"Attempting to send key ID: {int_value}")
 
             # Check if the integer is within a valid range if needed
-            if int_value < 0:  # Example check; modify as necessary
+            if int_value < 0:  
                 raise ValueError("Integer value must be non-negative.")
 
             if id_string:
@@ -342,21 +338,13 @@ class GuiApp:
         if hasattr(self, 'label'):
             self.label.config(text=text)
 
-    # def update_label(self,text):
-    #         """Update the label text every second."""
-    #         if hasattr(self, 'label'):
-    #             self.label.config(text=text)  # Update the label with the latest question
-    #         self.root.after(1000, self.update_label)  # Schedule the update to run every second
-
-    # def update_label(self, text):
-    #     """Update the displayed question in the GUI."""
-    #     self.label.config(text=text)
 
     def update_label_with_latest_question(self):
         global lastest_question
         """Update the label with the latest question."""
         self.update_label(lastest_question)  # Use the global variable
         self.root.after(1000, self.update_label_with_latest_question)  # Continue updating
+
 
     def run(self):
         """Run the Tkinter main loop."""
@@ -398,7 +386,6 @@ class GuiNode:
 
     def request_question(self, req):
         """Request a question from the service."""
-        # global lastest_question
         try:
             response = self.get_question_service(req)
             self.lastest_question = response.question
@@ -409,19 +396,6 @@ class GuiNode:
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
 
-        
-    # def remote_request_question(self, req):
-    #         """Request a question from the service."""
-    #         global lastest_question
-    #         try:
-    #             # req.rating = -2
-    #             response = self.get_question_service(req)
-    #             lastest_question = response.question
-    #             print(f"New Question: {lastest_question}")
-    #             # Update your GUI with the received question
-    #             self.gui_app.update_label(lastest_question)
-    #         except rospy.ServiceException as e:
-    #             rospy.logerr(f"Service call failed: {e}")
 
     def start_gui(self, req):
         """Start the GUI application."""
@@ -452,7 +426,6 @@ class GuiNode:
         """Launch the Tkinter GUI application."""
         root = tk.Tk()
         self.gui_app = GuiApp(root, self.get_question_service, self.key_id_service, self.question_label)
-        # self.gui_app = GuiApp(root, self.next_service, self.get_question_service, self.next_value_publisher, self.id_publisher, self.key_publisher, self.scale_publisher)
         # Ensure the latest question is shown on screen immediately
         self.gui_app.update_label(self.lastest_question)
         self.gui_app.run()

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+'''Main node for the Q&A system. This node is responsible for playing audio clips, logging responses, and handling joystick input.'''
 
 import csv
 import json
@@ -31,8 +32,6 @@ package_base_path = roslib.packages.get_pkg_dir('quori_osu')
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 home_dir = os.path.expanduser("~")
 quori_supplimental_path = os.path.join('quori_osu_supplemental')
-# simple_audio_path = os.path.join(home_dir, 'Music/simple_questions/')
-# complex_audio_path = os.path.join(home_dir, 'Music/complex_questions/')
 simple_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'simple/')
 complex_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'complex/')
 # introduction_file = os.path.join(quori_supplimental_path, 'q_an_a_audiofiles/', "SimpleIntro.mp3")
@@ -54,17 +53,7 @@ key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
 csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
 masterlist_file_path = os.path.join(questions_location, masterlist_name)
 
-# logging_location = os.path.expanduser('/opt/quori/src/quori_osu/logs')
-# questions_location = os.path.expanduser('/opt/quori/src/quori_osu/src/questions')
-# key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
-# csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
-# masterlist_file_path = os.path.join(questions_location, masterlist_name)
-
-# key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
-# csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', f'{id_string}_key{key_id_string}_log_{current_time}.csv')
-# masterlist_file_path = os.path.join(home_dir, 'Documents/q_and_a_json_files/', masterlist_name)
-
-# Global variables for questions and answers
+# Global variables (sorry needed for threading) for questions and answers
 question_id_list = []
 simple_question_list = []
 simple_answer_list = []
@@ -195,64 +184,10 @@ def initialize_questions_and_answers():
 
 # Functions
 
-# def show_image_fullscreen(image_name):
-#     # Create a new Tkinter window
-#     root = tk.Tk()
-    
-#     # Make the window fullscreen
-#     root.attributes('-fullscreen', True)
-    
-#     # Load the image from the Pictures folder
-#     image_path = os.path.expanduser(f'~/Pictures/{image_name}')
-#     image = Image.open(image_path)
-    
-#     # Convert the image to a format Tkinter can use
-#     tk_image = ImageTk.PhotoImage(image)
-    
-#     # Create a label to display the image
-#     label = tk.Label(root, image=tk_image)
-#     label.pack(expand=True)
-    
-#     # Bring the window to the front
-#     root.lift()
-#     root.attributes('-topmost', True)
-    
-#     # Bind the 'Escape' key to close the window
-#     root.bind("<Escape>", lambda e: root.quit())
-    
-#     # Start the Tkinter main loop
-#     root.mainloop()
-
-# def monitor_console_output(command):
-#     """Monitor the console output of a subprocess for specific strings."""
-#     global audio_playing
-
-#     # Start the subprocess with the command
-#     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-#     while True:
-#         # Read the output line by line
-#         output = process.stdout.readline()
-#         if output == '':
-#             break
-#         if output:
-#             # Check for specific strings in the output
-#             if 'Now playing' in output:
-#                 audio_playing = True
-#                 print("Audio playing status: True")
-#             elif 'Decoding of' in output:
-#                 audio_playing = False
-#                 print("Audio playing status: False")
-    
-#     # Wait for the process to finish
-#     process.wait()
-
 
 def update_csv_file_path():
     """Update the CSV file path based on the user ID and key ID."""
     global csv_file_path
-    # csv_file_path = os.path.join(home_dir, 'Documents/q_and_a_response_logs', 
-                                #  f'{id_string}_key{key_id_string}_log_{current_time}.csv')
     csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_log_{current_time}.csv')
     rospy.loginfo(f"Updated CSV file path to: {csv_file_path}")
 
@@ -343,7 +278,6 @@ def handle_key_service(req):
     id_string = req.user_id
     scale_type = req.scale_type  # If needed, handle `scale_type` for further logic
     
-    # new_key_file_path = os.path.join(home_dir, f'Documents/q_and_a_json_files/key_{key_id_string}.json')
     new_key_file_path = os.path.join(questions_location, f'key_{key_id_string}.json')
     
     # Load the new key file
@@ -384,51 +318,12 @@ def play_audio(file_path):
             pass
 
 
-# Blocking play_audio function, TODO implement threading
-# def play_audio(file_path):
-#     global current_process, audio_playing
-
-#     if audio_playing:
-#         rospy.loginfo("Audio is currently playing. Skipping play request.")
-#         return
-
-#     try:
-#         # Set flag to indicate audio is playing
-#         audio_playing = True
-#         # Start the audio playback process
-#         current_process = subprocess.Popen(["mpg123", file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#         stdout, stderr = current_process.communicate()
-
-#         if current_process.returncode == 0:
-#             rospy.loginfo("Audio playback finished successfully.")
-#         else:
-#             rospy.logerr(f"An error occurred: {stderr.decode()}")
-
-#     except Exception as e:
-#         rospy.logerr(f"Error occurred during audio playback: {e}")
-#     finally:
-#         audio_playing = False  # Reset flag when audio finishes playing
-
-
 def stop_audio():
     """Original stop audio function."""
     global current_process
     if current_process:
         current_process.terminate()
         current_process = None
-
-
-# Blocking stop_audio function, TODO implement threading
-# def stop_audio():
-#     global current_process, audio_playing
-#     if current_process and audio_playing:
-#         rospy.loginfo("Stopping audio playback.")
-#         current_process.terminate()
-#         current_process.wait()  # Ensure the process has terminated
-#         current_process = None
-#         audio_playing = False  # Reset the flag
-#     else:
-#         rospy.loginfo("No audio is currently playing.")
 
 
 def start_gui():
@@ -508,7 +403,6 @@ def handle_question_request(req):
     # Check if we have exhausted all questions
     if all_questions_exhausted:
         rospy.loginfo("All out of questions.")
-        #question_publisher.publish("All Out of Questions")
         return "All Out of Questions"
 
     response = req.rating
@@ -546,7 +440,6 @@ def handle_question_request(req):
             question = simple_question_list[index]
             current_simple_pub_index += 1
         rospy.loginfo(f"Sending question at index {index}: {question}")
-        # question_publisher.publish("Question: \n Hey Quori, " + question)
 
         current_audio_index = current_text_index
         current_text_index += 1
@@ -567,7 +460,7 @@ def joy_callback(data):
     """Callback function for joystick input."""
     global introduction_played, gui_started
 
-    # Start button for introduction or next question
+    # Start button for remote question updating
     if data.buttons == (0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0):  
         rospy.loginfo("Start button pressed.")
 
@@ -580,11 +473,9 @@ def joy_callback(data):
         # elif not gui_started and introduction_played:
 
         if not gui_started:
+            #This was left in incase a remote start of the gui is desired
             start_gui()
             gui_started = True
-        # else:
-            # rospy.loginfo("Doing Nothing.")
-            # task_queue.put(publish_next_question)
         else:
             try:
                 rospy.wait_for_service('/remote_update')  # Ensure the service is available
@@ -592,13 +483,12 @@ def joy_callback(data):
 
                 # Create the request with the appropriate fields
                 req = GetQuestionRequest()
-                req.rating = -2  # Set the rating or any other parameters as needed
+                req.rating = -2  # Set the rating to -2 to indicate a remote update
 
                 # Call the service
                 remote_update_service(req)
-                # response = remote_update_service(req)
             except rospy.ServiceException as e:
-                rospy.logerr(f"!!!!!!!!!! Service call failed: {e}")
+                rospy.logerr(f"Service call failed: {e}")
 
     # Select button for stopping audio
     elif data.buttons == (0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0):  
@@ -656,10 +546,6 @@ if __name__ == '__main__':
 
     root.after(100, process_tasks)
 
-    # Monitor console output in a separate thread if needed. This was an attempt to monitor audio playback.
-    # monitor_thread = threading.Thread(target=monitor_console_output, args=(current_process,))
-    # monitor_thread.start()
-
     # Seperate thread for listening to the joy controller commands 
     listener_thread = threading.Thread(target=listener)
     listener_thread.start()
@@ -668,8 +554,6 @@ if __name__ == '__main__':
     rospy.Service('/key_id', KeyID, handle_key_service)
 
     signal.signal(signal.SIGINT, signal_handler)  # Catch the shutdown signal
-
-    # show_image_fullscreen('racoon_astro_eyes.jpeg')
 
     root.mainloop()
     listener_thread.join()  # Ensure the listener thread completes before exiting
