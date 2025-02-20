@@ -180,7 +180,7 @@ class GuiApp:
             # Use the same font and size as the submit button
             button_font = ("Arial", 20)
             button_width = width // 4
-            button_height = height // 8
+            button_height = height // 6
         else:
             button_config = [
                 ("Strongly Disagree", "#FF8981", "#FFCCC7"),  # Softer red and lighter soft red
@@ -193,7 +193,7 @@ class GuiApp:
             # Use the same font and size as the submit button
             button_font = ("Arial", 20)
             button_width = width // 6
-            button_height = height // 8
+            button_height = height // 6
 
         for i, (label, color, selected_color) in enumerate(button_config):
             btn = tk.Button(
