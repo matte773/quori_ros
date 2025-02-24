@@ -7,11 +7,17 @@ from threading import Thread
 import tkinter as tk
 import subprocess
 import random
+import time
 from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 
 # Global variables
 lastest_question = "Waiting for message..." # Default message
 scale_type = "Likert" # Default scale type
+
+# Global Flags 
+use_UUID = True
+demo_question = True
+gen_question_key = True
 
 # Color constants
 LIGHT_BLUE = "#d4e1ff"
@@ -58,16 +64,18 @@ class GuiApp:
         self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
         self.id_entry.pack(pady=10)
 
-        # This is left in so that a field for the JSON Key can be typed in on the initial GUI screen
-        # if self.question_label is None:
-        #     # Integer Entry
-        #     self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
-        #     self.int_label.pack(pady=10)
-        #     self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
-        #     self.int_entry.pack(pady=10)
+        if gen_question_key == False:
+            if self.question_label is None:
+                # Integer Entry
+                self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
+                self.int_label.pack(pady=10)
+                self.int_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
+                self.int_entry.pack(pady=10)
+        else:
+            # Generate a random key integer between 0 and 99
+            self.random_key_value = random.randint(0, 99)  # Random int between 0 and 99
 
-        # Generate a random key integer between 0 and 99
-        self.random_key_value = random.randint(0, 99)  # Random int between 0 and 99
+        
 
         # Toggle Button for Scale Type
         self.scale_toggle_button = tk.Button(
@@ -260,7 +268,11 @@ class GuiApp:
                 widget.destroy()  # Remove previous error messages
         
         id_string = self.id_entry.get()
-        int_value = self.random_key_value
+
+        if gen_question_key == False:
+            int_value = self.int_entry.get()
+        else:
+            int_value = self.random_key_value
 
         try:
             int_value = int(int_value)  # Attempt to convert to integer

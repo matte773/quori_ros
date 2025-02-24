@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import os
 from itertools import count
+import roslib.packages
 
 # Code adapted from https://stackoverflow.com/questions/40619731/display-animated-gif-in-tkinter-python-3-5
 class GifLabel(tk.Label):
@@ -64,10 +65,11 @@ class FaceSwitcher:
     def __init__(self):
         # Load the GIFs
         # home_dir = os.path.expanduser("~")
-        face_dir = "/opt/quori/src/quori_osu/src/faces"
-        self.default_face_path = os.path.join(face_dir, 'default_face.gif')
-        self.thinking_face_path = os.path.join(face_dir, 'thinking_face.gif')
-        self.talking_face_path = os.path.join(face_dir, 'talking_face.gif')
+        package_base_path = roslib.packages.get_pkg_dir('quori_osu')
+        face_dir = "src/faces"
+        self.default_face_path = os.path.join(package_base_path, face_dir, 'default_face.gif')
+        self.thinking_face_path = os.path.join(package_base_path, face_dir, 'thinking_face.gif')
+        self.talking_face_path = os.path.join(package_base_path, face_dir, 'talking_face.gif')
         self.current_image_path = self.default_face_path
 
         # Set up Tkinter
