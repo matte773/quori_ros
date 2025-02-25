@@ -14,11 +14,6 @@ from quori_osu.srv import GetQuestion, KeyID, KeyIDRequest
 lastest_question = "Waiting for message..." # Default message
 scale_type = "Likert" # Default scale type
 
-# Global Flags 
-use_UUID = True
-demo_question = True
-gen_question_key = True
-
 # Color constants
 LIGHT_BLUE = "#d4e1ff"
 GREEN = "#8CD47E"
@@ -31,6 +26,11 @@ class GuiApp:
         """Initialize the GUI application."""
         self.root = root
         self.question_label = question_label
+
+        # Global Flags 
+        self.use_UUID = True
+        self.demo_question = True 
+        self.gen_question_key = True # False ads the entry box for key value 
 
         self.root.title("ROS Noetic GUI")
         self.root.geometry("1280x720")
@@ -58,13 +58,19 @@ class GuiApp:
         self.id_frame = tk.Frame(self.root, bg=LIGHT_BLUE)
         self.id_frame.pack(expand=True)
 
-        # Name Entry
-        self.id_label = tk.Label(self.id_frame, text="Enter Name:", font=("Arial", 24), bg=LIGHT_BLUE)
-        self.id_label.pack(pady=10)
-        self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
-        self.id_entry.pack(pady=10)
+        self.title = tk.Label(self.id_frame, text="Welcome to the Quori Q & A!", font=("Arial", 24), bg=LIGHT_BLUE)
+        self.title.pack(pady=10)
 
-        if gen_question_key == False:
+        if not self.use_UUID:
+            # Name Entry
+            self.id_label = tk.Label(self.id_frame, text="Enter Name:", font=("Arial", 24), bg=LIGHT_BLUE)
+            self.id_label.pack(pady=10)
+            self.id_entry = tk.Entry(self.id_frame, width=20, font=("Arial", 24))
+            self.id_entry.pack(pady=10)
+        else:
+            self.UUID = str(int(round(time.time())))
+
+        if self.gen_question_key == False:
             if self.question_label is None:
                 # Integer Entry
                 self.int_label = tk.Label(self.id_frame, text="Enter Key Integer Value:", font=("Arial", 24), bg=LIGHT_BLUE)
@@ -91,7 +97,7 @@ class GuiApp:
         # Submit Button
         self.id_button = tk.Button(
             self.id_frame,
-            text="Submit",
+            text="Start",
             font=("Arial", 24), 
             command=self.send_key_id,
             bg=GREEN,
@@ -267,9 +273,12 @@ class GuiApp:
             if isinstance(widget, tk.Label) and widget.cget("fg") == "red":
                 widget.destroy()  # Remove previous error messages
         
-        id_string = self.id_entry.get()
+        if not self.use_UUID:
+            id_string = self.id_entry.get()
+        else:
+            id_string = self.UUID
 
-        if gen_question_key == False:
+        if self.gen_question_key == False:
             int_value = self.int_entry.get()
         else:
             int_value = self.random_key_value
@@ -348,6 +357,9 @@ class GuiApp:
     def update_label(self, text):
         """Update the label with new text."""
         if hasattr(self, 'label'):
+            if text == 'All Out of Questions':
+                # TODO: Instead trigger the thank you screen
+                pass
             self.label.config(text=text)
 
 

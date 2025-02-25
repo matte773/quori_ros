@@ -32,8 +32,7 @@ package_base_path = roslib.packages.get_pkg_dir('quori_osu')
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 home_dir = os.path.expanduser("~")
 quori_supplimental_path = os.path.join('quori_osu_supplemental')
-simple_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'simple/')
-complex_audio_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles/', 'complex/')
+audio_root_path = os.path.join(package_base_path,'src', quori_supplimental_path, 'q_and_a_audiofiles')
 # introduction_file = os.path.join(quori_supplimental_path, 'q_an_a_audiofiles/', "SimpleIntro.mp3")
 
 # Placeholders for KeyID info
@@ -54,28 +53,19 @@ csv_file_path = os.path.join(logging_location, f'{id_string}_key{key_id_string}_
 masterlist_file_path = os.path.join(questions_location, masterlist_name)
 
 # Global variables (sorry needed for threading) for questions and answers
-question_id_list = []
-simple_question_list = []
-simple_answer_list = []
-simple_audio_list = []
-complex_question_list = []
-complex_answer_list = []
-complex_audio_list = []
-complexity_list = []
+
+# complexity_list = []
 response_list = []
+all_questions = {}
 
 # Delay times in seconds
 delay_times = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 # Indexes and counters
 current_text_index = 0
-current_audio_index = 0
-current_simple_writing_index = 0
-current_complex_writing_index = 0
-current_simple_pub_index = 0
-current_complex_pub_index = 0
+current_audio_index = 0 # this lags by one behind the text index
+
 next_button_count = 0
 current_delay = 0
-total_questions = 0
 rating = -1
 current_process = None
 task_queue = queue.Queue()
@@ -148,9 +138,8 @@ def filter_questions(master_data, key_data):
 
 def initialize_questions_and_answers():
     """Initialize the questions and answers based on the key data."""
-    global simple_question_list, simple_answer_list, simple_audio_list
-    global complex_question_list, complex_answer_list, complex_audio_list
-    global question_id_list, complexity_list, total_questions
+
+    global all_questions
 
     # Load the master list and key data
     master_data = load_json_file(masterlist_file_path)
@@ -159,27 +148,14 @@ def initialize_questions_and_answers():
     rospy.loginfo(f"Key Data: {key_data}")
 
     # Filter the questions based on the key data
-    filtered_questions = filter_questions(master_data, key_data)
+    all_questions = filter_questions(master_data, key_data)
 
     # Log the filtered questions for debugging
-    rospy.loginfo(f"Filtered Questions: {filtered_questions}")
+    rospy.loginfo(f"Filtered Questions: {all_questions}")
 
-    # Initialize the lists
-    simple_question_list = [q['question'] for q in filtered_questions if q['type'] == 'simple']
-    simple_answer_list = [q['answer'] for q in filtered_questions if q['type'] == 'simple']
-    simple_audio_list = [q['audio_file'] for q in filtered_questions if q['type'] == 'simple']
 
-    complex_question_list = [q['question'] for q in filtered_questions if q['type'] == 'complex']
-    complex_answer_list = [q['answer'] for q in filtered_questions if q['type'] == 'complex']
-    complex_audio_list = [q['audio_file'] for q in filtered_questions if q['type'] == 'complex']
-
-    question_id_list = [q['id'] for q in filtered_questions]
-
-    complexity_list = [q['type'] for q in filtered_questions]
-
-    total_questions = len(simple_question_list) + len(complex_question_list)
-    rospy.loginfo(f"Total questions: {total_questions}")
-    rospy.loginfo(f"Simple Questions: {len(simple_question_list)}, Complex Questions: {len(complex_question_list)}")
+    rospy.loginfo(f"Total questions: {len(all_questions)}")
+    # rospy.loginfo(f"Simple Questions: {len(simple_question_list)}, Complex Questions: {len(complex_question_list)}")
 
 
 # Functions
@@ -194,34 +170,18 @@ def update_csv_file_path():
 
 def write_to_file():
     """Append the original question ID, current question, answer, delay, rating, and timestamp to a CSV file."""
-    global current_complex_writing_index, current_simple_writing_index, current_audio_index, rating
+    # global current_complex_writing_index, current_simple_writing_index, current_audio_index, rating
+    global all_questions
     rospy.loginfo("Writing data to CSV file. Current Text Index: %d vs Response List %d", current_text_index, len(response_list))
 
     log_index = len(response_list) - 1 
-    original_question_id = question_id_list[log_index]  # Ensure correct indexing
+    original_question_id = all_questions[log_index]['id']  # Ensure correct indexing
     rating_index = response_list[-1] if response_list else None
 
-    # Determine if the question is simple or complex based on the complexity list
-    if complexity_list[log_index] == 'complex':
-        index = current_complex_writing_index 
-        rospy.loginfo(f"Writing Index: {index}")
-        current_question = complex_question_list[index]
-        current_answer = complex_answer_list[index]
-        current_audio_file = complex_audio_list[index]
-        current_complexity = 'Complex'
-        current_complex_writing_index += 1
-        rospy.loginfo(f"Complex Index: {current_complex_writing_index}")
-        # current_audio_index += 1
-    else:
-        index = current_simple_writing_index
-        rospy.loginfo(f"Writing Index: {index}")
-        current_question = simple_question_list[index]
-        current_answer = simple_answer_list[index]
-        current_audio_file = simple_audio_list[index]
-        current_complexity = 'Simple'
-        current_simple_writing_index += 1
-        rospy.loginfo(f"Simple Index: {current_simple_writing_index}")
-        # current_audio_index += 1
+    if all_questions[log_index]['type'] == 'demo':
+        rospy.loginfo("Demo Question Skipping Logging")
+        return
+
     
     if rating_index is not None:
         if scale_type == "Triad":
@@ -257,6 +217,10 @@ def write_to_file():
             writer.writerow(['Question ID', 'Question', 'Answer', 'Complexity', 'Delay', 'Rating', 'Rating Index', 'Scale Type','Timestamp', 'Audio File', 'Masterlist'])
         
         # Append the actual data, including the original question ID
+        current_question = all_questions[log_index]['question']
+        current_answer = all_questions[log_index]['answer']
+        current_complexity = all_questions[log_index]['type']
+        current_audio_file = all_questions[log_index]['audio_file']
         writer.writerow([original_question_id, current_question, current_answer, current_complexity, current_delay, rating, rating_index, scale_type, current_time, current_audio_file, masterlist_name])
     
     rospy.loginfo(f"Data logged: Question ID: {original_question_id}, Question: {current_question}, Answer: {current_answer}, Complexity: {current_complexity}, "
@@ -271,7 +235,7 @@ def write_to_file():
 
 def handle_key_service(req):
     """Handle the KeyID service request."""
-    global key_id_string, key_file_path, key_data, id_string, updated_id, scale_type
+    global key_id_string, key_file_path, key_data, id_string, updated_id, scale_type, all_questions
     rospy.loginfo(f"Received User ID: {req.user_id}, Key ID: {req.key_id}, Scale Type: {req.scale_type}")
 
     key_id_string = req.key_id
@@ -287,9 +251,8 @@ def handle_key_service(req):
         key_file_path = new_key_file_path
         initialize_questions_and_answers()
         
-        # Log initialized data
-        rospy.loginfo(f"Simple Questions Initialized: {simple_question_list}")
-        rospy.loginfo(f"Complex Questions Initialized: {complex_question_list}")
+        # # Log initialized data
+        rospy.loginfo(f"Questions Initialized: {[question['question'] for question in all_questions]}")
         
         # Update CSV file path to include the key_id
         update_csv_file_path()
@@ -374,15 +337,12 @@ def play_with_delay(file_path, delay):
 
 def play_next_audio_clip():
     """Function to play the next audio clip based on the current audio index."""
-    global current_audio_index, all_questions_exhausted, current_delay
+    global current_audio_index, all_questions_exhausted, current_delay, all_questions
 
     if not all_questions_exhausted:  
-        if complexity_list[current_audio_index] == 'complex':
-            folder_path = os.path.expanduser(complex_audio_path)
-            file_name = complex_audio_list[current_complex_writing_index]
-        else:
-            folder_path = os.path.expanduser(simple_audio_path)
-            file_name = simple_audio_list[current_simple_writing_index]
+        
+        folder_path = os.path.expanduser(os.path.join(audio_root_path, all_questions[current_audio_index]['type']))
+        file_name = all_questions[current_audio_index]['audio_file']
 
         file_path = os.path.join(folder_path, file_name)
         rospy.loginfo(f"Playing audio clip: {file_path}")
@@ -390,15 +350,16 @@ def play_next_audio_clip():
 
     else:
         rospy.loginfo("All questions have been exhausted.")
-        all_questions_exhausted = True
 
 
 def handle_question_request(req):
     """Handle the question request from the service. Returns the next question as long as the question list hasnt been exhausted."""
-    global current_text_index, next_button_count, current_audio_index, all_questions_exhausted, current_complex_pub_index, current_simple_pub_index, response_list, current_delay, rating
+    global current_text_index, next_button_count, current_audio_index, all_questions_exhausted, response_list, current_delay, rating, all_questions
+    
+    total_questions = len(all_questions)
     rospy.loginfo(
         f"Question Requested.\n Next Button Count: {next_button_count} vs Text Count: {current_text_index} vs Audio Count: {current_audio_index} vs Total Questions: {total_questions} vs Response List: {len(response_list)}")
-    rospy.loginfo(f"Length of List: Simple: {len(simple_question_list)} and Complex: {len(complex_question_list)}")
+    rospy.loginfo(f"Length of List: {len(all_questions)}")
 
     # Check if we have exhausted all questions
     if all_questions_exhausted:
@@ -417,7 +378,7 @@ def handle_question_request(req):
         rospy.loginfo(f"Received index: {response}")
 
         # Check if we have exhausted all questions
-        if len(response_list) <= len(simple_question_list) + len(complex_question_list):
+        if len(response_list) <= len(all_questions):
             write_to_file()
         else:
             rospy.loginfo("All questions have been answered. No more logging.")
@@ -429,26 +390,19 @@ def handle_question_request(req):
     
     # Check if we have exhausted all questions
     if current_text_index < total_questions and len(response_list) < total_questions:
-        if complexity_list[current_text_index] == 'complex':
-            # index = current_text_index - len(simple_question_list) - (len(complex_question_list) - len(simple_question_list))
-            index = current_complex_pub_index
-            question = complex_question_list[index]
-            current_complex_pub_index += 1
-        else:
-            # index = current_text_index - len(complex_question_list) - (len(simple_question_list) - len(complex_question_list))
-            index = current_simple_pub_index
-            question = simple_question_list[index]
-            current_simple_pub_index += 1
-        rospy.loginfo(f"Sending question at index {index}: {question}")
+
+        question = all_questions[current_text_index]['question']
 
         current_audio_index = current_text_index
         current_text_index += 1
 
         # If this is the last question, mark all questions as exhausted
+        # This is redundant code and should not trigger
         if current_text_index > total_questions:
             all_questions_exhausted = True
             rospy.loginfo("All questions sent. Setting all_questions_exhausted to True.")
     else:
+
         all_questions_exhausted = True
         rospy.loginfo("All Out of Questions")
         question = "All Out of Questions"
