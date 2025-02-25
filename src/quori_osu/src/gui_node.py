@@ -328,29 +328,63 @@ class GuiApp:
             return
 
 
+    # def select_button(self, button_index):
+    #     """Handles button selection and question service call."""
+    #     global lastest_question
+
+    #     # Reset the previously selected button
+    #     if self.selected_button is not None:
+    #         self.buttons[self.selected_button].config(relief=tk.RAISED)
+
+    #     # Highlight the selected button
+    #     self.selected_button = button_index
+    #     self.buttons[button_index].config(relief=tk.SUNKEN)
+
+    #     try:
+    #         rospy.loginfo(f"Calling question service with selected button index: {self.selected_button}")
+    #         # Call the service with the selected button index
+    #         response = self.question_service(self.selected_button)  # Capture the response
+    #         lastest_question = response.question  # Update the latest question
+    #         self.update_label(lastest_question)  # Update the GUI with the new question
+    #     except rospy.ServiceException as e:
+    #         rospy.logerr(f"Failed to call question service: {e}")
+
+    #     # Reset the selected button appearance
+    #     self.buttons[self.selected_button].config(relief=tk.RAISED)
+    #     self.selected_button = None
+
     def select_button(self, button_index):
         """Handles button selection and question service call."""
         global lastest_question
 
-        # Reset the previously selected button
-        if self.selected_button is not None:
-            self.buttons[self.selected_button].config(relief=tk.RAISED)
+        # Reset the previously selected button if the buttons still exits
+        if self.selected_button is not None and self.selected_button < len(self.buttons):
+            try:
+                self.buttons[self.selected_button].config(relief=tk.RAISED)
+            except Exception as e:
+                # rospy.logwarn(f"Error resetting button state: {e}")
+                return
 
-        # Highlight the selected button
-        self.selected_button = button_index
-        self.buttons[button_index].config(relief=tk.SUNKEN)
+        # Highlight the selected button, ensure the index is valid
+        if 0 <= button_index < len(self.buttons):
+            self.selected_button = button_index
+            self.buttons[button_index].config(relief=tk.SUNKEN)
 
-        try:
-            rospy.loginfo(f"Calling question service with selected button index: {self.selected_button}")
-            # Call the service with the selected button index
-            response = self.question_service(self.selected_button)  # Capture the response
-            lastest_question = response.question  # Update the latest question
-            self.update_label(lastest_question)  # Update the GUI with the new question
-        except rospy.ServiceException as e:
-            rospy.logerr(f"Failed to call question service: {e}")
-
-        # Reset the selected button appearance
-        self.buttons[self.selected_button].config(relief=tk.RAISED)
+            try:
+                rospy.loginfo(f"Calling question service with selected button index: {self.selected_button}")
+                # Call the service with the selected button index
+                response = self.question_service(self.selected_button)  # Capture the response
+                lastest_question = response.question  # Update the latest question
+                self.update_label(lastest_question)  # Update the GUI with the new question
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Failed to call question service: {e}")
+        
+        # Reset the selected button appearance at the end, if still valid
+        if self.selected_button is not None and self.selected_button < len(self.buttons):
+            try:
+                self.buttons[self.selected_button].config(relief=tk.RAISED)
+            except Exception as e:
+                rospy.logwarn(f"Error resetting button state: {e}")
         self.selected_button = None
 
 
