@@ -161,7 +161,7 @@ class GuiApp:
             # Title label for interaction question
             self.title_label = tk.Label(
                 self.container_frame,
-                text="The response time of Quori was satisfactory",  # This label is now above the buttons
+                text="The timing of Quori's response was natural",  # This label is now above the buttons
                 font=("Arial", 18),
                 fg="black",
                 pady=10,
@@ -358,8 +358,22 @@ class GuiApp:
         """Update the label with new text."""
         if hasattr(self, 'label'):
             if text == 'All Out of Questions':
-                # TODO: Instead trigger the thank you screen
-                pass
+                for btn in self.buttons:
+                    btn.destroy()
+                self.title_label.destroy()
+                self.question_label.destroy()
+
+                self.thank_you_text = tk.Label(
+                self.container_frame,
+                text="Thank you for your Participation!",
+                font=("Arial", 24),
+                fg="black",
+                pady=10,
+                bg=LIGHT_BLUE,
+                )
+                self.thank_you_text.pack()
+
+                
             self.label.config(text=text)
 
 
