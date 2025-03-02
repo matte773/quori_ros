@@ -66,7 +66,7 @@ class FaceSwitcher:
         # Load the GIFs
         # home_dir = os.path.expanduser("~")
         package_base_path = roslib.packages.get_pkg_dir('quori_osu')
-        face_dir = "src/faces"
+        face_dir = "src/quori_osu_supplemental/faces"
         self.default_face_path = os.path.join(package_base_path, face_dir, 'default_face.gif')
         self.thinking_face_path = os.path.join(package_base_path, face_dir, 'thinking_face.gif')
         self.talking_face_path = os.path.join(package_base_path, face_dir, 'talking_face.gif')

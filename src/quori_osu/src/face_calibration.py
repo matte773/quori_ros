@@ -162,4 +162,4 @@ if __name__ == "__main__":
         pass
 
     filename = filepath.split(os.sep)[-1]
-    images[0].save(os.path.join('faces', filename), save_all=True, append_images=images[1:], duration=delays)
+    images[0].save(os.path.join('quori_osu_supplemental/faces', filename), save_all=True, append_images=images[1:], duration=delays)
